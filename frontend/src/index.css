@@ -1,0 +1,113 @@
+@import "tailwindcss";
+
+@theme {
+  --color-morning: #f59e0b;
+  --color-morning-bg: #fef3c7;
+  --color-morning-dark: #78350f;
+  --color-evening: #8b5cf6;
+  --color-evening-bg: #ede9fe;
+  --color-evening-dark: #4c1d95;
+  --color-weekend: #10b981;
+  --color-weekend-bg: #d1fae5;
+  --color-weekend-dark: #064e3b;
+  --color-custom: #3b82f6;
+  --color-custom-bg: #dbeafe;
+  --color-custom-dark: #1e3a5f;
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  margin: 0;
+  background: #0f172a;
+  color: #e2e8f0;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+  overscroll-behavior: none;
+  user-select: none;
+}
+
+#root {
+  min-height: 100svh;
+}
+
+input, textarea {
+  user-select: text;
+}
+
+@keyframes check-pop {
+  0% { transform: scale(0.8); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes streak-glow {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.3); }
+}
+
+.animate-check-pop {
+  animation: check-pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.3s ease-out;
+}
+
+.animate-streak-glow {
+  animation: streak-glow 2s ease-in-out infinite;
+}
+
+@keyframes pulse-ring {
+  0% { box-shadow: 0 0 0 0 rgba(251, 146, 60, 0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(251, 146, 60, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(251, 146, 60, 0); }
+}
+
+@keyframes shield-glow {
+  0%, 100% { filter: drop-shadow(0 0 4px rgba(251, 146, 60, 0.3)); }
+  50% { filter: drop-shadow(0 0 12px rgba(251, 146, 60, 0.6)); }
+}
+
+@keyframes fire-dance {
+  0%, 100% { transform: scaleY(1) translateY(0); }
+  25% { transform: scaleY(1.1) translateY(-1px); }
+  50% { transform: scaleY(0.95) translateY(1px); }
+  75% { transform: scaleY(1.05) translateY(-0.5px); }
+}
+
+@keyframes slide-in {
+  from { opacity: 0; transform: translateX(-10px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.animate-pulse-ring {
+  animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.animate-shield-glow {
+  animation: shield-glow 3s ease-in-out infinite;
+}
+
+.animate-fire-dance {
+  animation: fire-dance 0.8s ease-in-out infinite;
+}
+
+.animate-slide-in {
+  animation: slide-in 0.3s ease-out forwards;
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(100%); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.3s ease-out;
+}
