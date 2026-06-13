@@ -1,52 +1,70 @@
 from datetime import date
 
 
-async def get_today_budget(db) -> dict:
-    settings = await db.settings.find_one({"_id": "app_settings"})
-    daily_allowance = settings["daily_allowance"] if settings else 500
+async def sync_balance(db, user_id: str) -> dict:
+    """Add daily allowance for any missed days. Call before reading balance."""
+    settings = await db.settings.find_one({"user_id": user_id})
+    if not settings:
+        return {"balance": 0, "daily_allowance": 500, "last_balance_date": None}
+
+    balance = settings.get("balance", 0)
+    daily_allowance = settings.get("daily_allowance", 500)
+    last_str = settings.get("last_balance_date")
 
     today = date.today()
+    today_str = today.isoformat()
 
-    # Use last_budget_reset date instead of auto monthly reset
-    reset_str = settings.get("last_budget_reset") if settings else None
-    if reset_str:
-        reset_date = date.fromisoformat(reset_str)
-    else:
-        reset_date = today.replace(day=1)
+    if last_str and last_str < today_str:
+        days_missed = (today - date.fromisoformat(last_str)).days
+        balance += days_missed * daily_allowance
+        await db.settings.update_one(
+            {"user_id": user_id},
+            {"$set": {"balance": balance, "last_balance_date": today_str}},
+        )
+    elif not last_str:
+        # First time — just set today, no retroactive add
+        await db.settings.update_one(
+            {"user_id": user_id},
+            {"$set": {"balance": balance, "last_balance_date": today_str}},
+        )
 
-    days_since_reset = (today - reset_date).days + 1
-    total_allowance = days_since_reset * daily_allowance
+    settings["balance"] = balance
+    settings["last_balance_date"] = today_str
+    return settings
 
-    # Sum all logs from reset date onward
-    logs = await db.budget_logs.find(
-        {"date": {"$gte": reset_date.isoformat()}}
-    ).to_list(length=None)
 
-    total_spent = sum(log["amount_spent"] for log in logs)
-    available = total_allowance - total_spent
+async def get_today_budget(db, user_id: str) -> dict:
+    settings = await sync_balance(db, user_id)
+    balance = settings.get("balance", 0)
+    daily_allowance = settings.get("daily_allowance", 500)
 
-    today_log = next((l for l in logs if l["date"] == today.isoformat()), None)
+    today_str = date.today().isoformat()
+    today_log = await db.budget_logs.find_one({"date": today_str, "user_id": user_id})
 
     return {
-        "date": today.isoformat(),
+        "date": today_str,
         "daily_allowance": daily_allowance,
-        "available_budget": available,
-        "total_spent_this_month": total_spent,
-        "total_allowance_this_month": total_allowance,
-        "days_in_month_so_far": days_since_reset,
+        "available_budget": balance,
         "logged_today": today_log is not None,
         "today_spent": today_log["amount_spent"] if today_log else 0,
     }
 
 
-async def get_monthly_summary(db, month: str) -> dict:
+async def get_monthly_summary(db, month: str, user_id: str) -> dict:
     import calendar
 
     year, mon = map(int, month.split("-"))
     days_in_month = calendar.monthrange(year, mon)[1]
 
-    settings = await db.settings.find_one({"_id": "app_settings"})
-    daily_allowance = settings["daily_allowance"] if settings else 500
+    logs = await db.budget_logs.find(
+        {"date": {"$regex": f"^{month}"}, "user_id": user_id}
+    ).to_list(length=None)
+
+    total_spent = sum(log["amount_spent"] for log in logs)
+    days_logged = len(logs)
+
+    settings = await db.settings.find_one({"user_id": user_id})
+    daily_allowance = settings.get("daily_allowance", 500) if settings else 500
 
     today = date.today()
     if year == today.year and mon == today.month:
@@ -55,13 +73,6 @@ async def get_monthly_summary(db, month: str) -> dict:
         days_counted = days_in_month
 
     total_allowance = days_counted * daily_allowance
-
-    logs = await db.budget_logs.find(
-        {"date": {"$regex": f"^{month}"}}
-    ).to_list(length=None)
-
-    total_spent = sum(log["amount_spent"] for log in logs)
-    days_logged = len(logs)
 
     return {
         "month": month,

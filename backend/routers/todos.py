@@ -1,7 +1,8 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from bson import ObjectId
 from datetime import datetime, date
 
+from auth import get_current_user
 from database import get_db
 from models.todo import TodoCreate, TodoUpdate, TodoResponse
 
@@ -20,24 +21,28 @@ def todo_doc_to_response(doc) -> dict:
 
 
 @router.get("/today", response_model=list[TodoResponse])
-async def get_today_todos():
+async def get_today_todos(user: dict = Depends(get_current_user)):
     db = get_db()
+    user_id = user["_id"]
     today_str = date.today().isoformat()
     todos = await db.todos.find({
         "due_date": {"$lte": today_str},
+        "user_id": user_id,
     }).sort("order", 1).to_list(length=None)
     return [todo_doc_to_response(t) for t in todos]
 
 
 @router.post("", response_model=TodoResponse)
-async def create_todo(todo: TodoCreate):
+async def create_todo(todo: TodoCreate, user: dict = Depends(get_current_user)):
     db = get_db()
+    user_id = user["_id"]
     doc = {
         "name": todo.name,
         "due_date": todo.due_date or date.today().isoformat(),
         "completed": False,
         "completed_at": None,
         "order": todo.order,
+        "user_id": user_id,
         "created_at": datetime.utcnow(),
     }
     result = await db.todos.insert_one(doc)
@@ -46,37 +51,41 @@ async def create_todo(todo: TodoCreate):
 
 
 @router.put("/{todo_id}", response_model=TodoResponse)
-async def update_todo(todo_id: str, todo: TodoUpdate):
+async def update_todo(todo_id: str, todo: TodoUpdate, user: dict = Depends(get_current_user)):
     db = get_db()
+    user_id = user["_id"]
     update_data = {k: v for k, v in todo.model_dump().items() if v is not None}
     if update_data:
-        await db.todos.update_one({"_id": ObjectId(todo_id)}, {"$set": update_data})
-    doc = await db.todos.find_one({"_id": ObjectId(todo_id)})
+        await db.todos.update_one({"_id": ObjectId(todo_id), "user_id": user_id}, {"$set": update_data})
+    doc = await db.todos.find_one({"_id": ObjectId(todo_id), "user_id": user_id})
     return todo_doc_to_response(doc)
 
 
 @router.delete("/{todo_id}")
-async def delete_todo(todo_id: str):
+async def delete_todo(todo_id: str, user: dict = Depends(get_current_user)):
     db = get_db()
-    await db.todos.delete_one({"_id": ObjectId(todo_id)})
+    user_id = user["_id"]
+    await db.todos.delete_one({"_id": ObjectId(todo_id), "user_id": user_id})
     return {"ok": True}
 
 
 @router.post("/{todo_id}/complete")
-async def complete_todo(todo_id: str):
+async def complete_todo(todo_id: str, user: dict = Depends(get_current_user)):
     db = get_db()
+    user_id = user["_id"]
     await db.todos.update_one(
-        {"_id": ObjectId(todo_id)},
+        {"_id": ObjectId(todo_id), "user_id": user_id},
         {"$set": {"completed": True, "completed_at": datetime.utcnow()}},
     )
     return {"ok": True}
 
 
 @router.delete("/{todo_id}/complete")
-async def uncomplete_todo(todo_id: str):
+async def uncomplete_todo(todo_id: str, user: dict = Depends(get_current_user)):
     db = get_db()
+    user_id = user["_id"]
     await db.todos.update_one(
-        {"_id": ObjectId(todo_id)},
+        {"_id": ObjectId(todo_id), "user_id": user_id},
         {"$set": {"completed": False, "completed_at": None}},
     )
     return {"ok": True}

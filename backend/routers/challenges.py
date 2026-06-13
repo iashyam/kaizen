@@ -1,7 +1,8 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from bson import ObjectId
 from datetime import datetime, date, timedelta
 
+from auth import get_current_user
 from database import get_db
 from models.challenge import ChallengeCreate, ChallengeUpdate, ChallengeExtend, ChallengeResponse
 
@@ -17,7 +18,6 @@ def get_milestones(target_days: int, current_streak: int, completed_dates: set[s
         if m > target_days:
             break
         reached = current_streak >= m
-        # Find the date this milestone was reached (m-th completed date)
         reached_date = None
         if reached and len(completed_dates) >= m:
             sorted_d = sorted(completed_dates)
@@ -47,7 +47,7 @@ def doc_to_response(doc, milestones=None) -> dict:
     }
 
 
-async def recalc_streak(db, challenge_doc: dict) -> dict:
+async def recalc_streak(db, challenge_doc: dict, user_id: str) -> dict:
     """Recalculate challenge streak based on habit completion history."""
     habit_ids = challenge_doc.get("habit_ids", [])
     if not habit_ids:
@@ -60,7 +60,7 @@ async def recalc_streak(db, challenge_doc: dict) -> dict:
     date_sets = []
     for hid in habit_ids:
         logs = await db.habit_logs.find(
-            {"habit_id": hid, "completed": True}
+            {"habit_id": hid, "completed": True, "user_id": user_id}
         ).to_list(length=None)
         date_sets.append({log["date"] for log in logs})
 
@@ -84,9 +84,7 @@ async def recalc_streak(db, challenge_doc: dict) -> dict:
 
     sorted_dates = sorted(all_completed)
     last_date = sorted_dates[-1]
-    first_date = sorted_dates[0]
 
-    # Current streak: walk back from today
     today = date.today()
     current_streak = 0
     check = today
@@ -98,7 +96,6 @@ async def recalc_streak(db, challenge_doc: dict) -> dict:
         current_streak += 1
         check -= timedelta(days=1)
 
-    # Longest streak
     longest = 0
     streak = 1
     for i in range(1, len(sorted_dates)):
@@ -111,14 +108,12 @@ async def recalc_streak(db, challenge_doc: dict) -> dict:
             streak = 1
     longest = max(longest, streak)
 
-    # Started at = first date in current streak
     started_at = None
     if current_streak > 0:
         started_at = (today - timedelta(days=current_streak - 1)).isoformat()
         if today.isoformat() not in all_completed:
             started_at = (today - timedelta(days=current_streak)).isoformat()
 
-    # Completed at = when streak hit target
     target = challenge_doc.get("target_days", 30)
     completed_at = challenge_doc.get("completed_at")
     if current_streak >= target and not completed_at:
@@ -137,15 +132,16 @@ async def recalc_streak(db, challenge_doc: dict) -> dict:
 
 
 @router.get("", response_model=list[ChallengeResponse])
-async def list_challenges():
+async def list_challenges(user: dict = Depends(get_current_user)):
     db = get_db()
+    user_id = user["_id"]
     challenges = await db.challenges.find(
-        {"archived": {"$ne": True}}
+        {"archived": {"$ne": True}, "user_id": user_id}
     ).sort("created_at", -1).to_list(length=None)
 
     result = []
     for c in challenges:
-        streak_data = await recalc_streak(db, c)
+        streak_data = await recalc_streak(db, c, user_id)
         await db.challenges.update_one({"_id": c["_id"]}, {"$set": streak_data})
         resp = doc_to_response(c, streak_data.get("milestones"))
         resp.update(streak_data)
@@ -154,8 +150,9 @@ async def list_challenges():
 
 
 @router.post("", response_model=ChallengeResponse)
-async def create_challenge(data: ChallengeCreate):
+async def create_challenge(data: ChallengeCreate, user: dict = Depends(get_current_user)):
     db = get_db()
+    user_id = user["_id"]
     doc = {
         "name": data.name,
         "habit_ids": data.habit_ids,
@@ -166,6 +163,7 @@ async def create_challenge(data: ChallengeCreate):
         "started_at": None,
         "completed_at": None,
         "milestones": [],
+        "user_id": user_id,
         "created_at": datetime.utcnow(),
         "archived": False,
     }
@@ -175,13 +173,14 @@ async def create_challenge(data: ChallengeCreate):
 
 
 @router.put("/{challenge_id}", response_model=ChallengeResponse)
-async def update_challenge(challenge_id: str, data: ChallengeUpdate):
+async def update_challenge(challenge_id: str, data: ChallengeUpdate, user: dict = Depends(get_current_user)):
     db = get_db()
+    user_id = user["_id"]
     update = {k: v for k, v in data.model_dump().items() if v is not None}
     if update:
-        await db.challenges.update_one({"_id": ObjectId(challenge_id)}, {"$set": update})
-    doc = await db.challenges.find_one({"_id": ObjectId(challenge_id)})
-    streak_data = await recalc_streak(db, doc)
+        await db.challenges.update_one({"_id": ObjectId(challenge_id), "user_id": user_id}, {"$set": update})
+    doc = await db.challenges.find_one({"_id": ObjectId(challenge_id), "user_id": user_id})
+    streak_data = await recalc_streak(db, doc, user_id)
     await db.challenges.update_one({"_id": doc["_id"]}, {"$set": streak_data})
     resp = doc_to_response(doc, streak_data.get("milestones"))
     resp.update(streak_data)
@@ -189,17 +188,18 @@ async def update_challenge(challenge_id: str, data: ChallengeUpdate):
 
 
 @router.post("/{challenge_id}/extend", response_model=ChallengeResponse)
-async def extend_challenge(challenge_id: str, data: ChallengeExtend):
+async def extend_challenge(challenge_id: str, data: ChallengeExtend, user: dict = Depends(get_current_user)):
     """Extend a completed challenge by adding more days to target."""
     db = get_db()
-    doc = await db.challenges.find_one({"_id": ObjectId(challenge_id)})
+    user_id = user["_id"]
+    doc = await db.challenges.find_one({"_id": ObjectId(challenge_id), "user_id": user_id})
     new_target = doc.get("target_days", 30) + data.extra_days
     await db.challenges.update_one(
-        {"_id": ObjectId(challenge_id)},
+        {"_id": ObjectId(challenge_id), "user_id": user_id},
         {"$set": {"target_days": new_target, "completed_at": None}},
     )
-    doc = await db.challenges.find_one({"_id": ObjectId(challenge_id)})
-    streak_data = await recalc_streak(db, doc)
+    doc = await db.challenges.find_one({"_id": ObjectId(challenge_id), "user_id": user_id})
+    streak_data = await recalc_streak(db, doc, user_id)
     await db.challenges.update_one({"_id": doc["_id"]}, {"$set": streak_data})
     resp = doc_to_response(doc, streak_data.get("milestones"))
     resp.update(streak_data)
@@ -207,36 +207,39 @@ async def extend_challenge(challenge_id: str, data: ChallengeExtend):
 
 
 @router.delete("/{challenge_id}")
-async def delete_challenge(challenge_id: str):
+async def delete_challenge(challenge_id: str, user: dict = Depends(get_current_user)):
     db = get_db()
+    user_id = user["_id"]
     await db.challenges.update_one(
-        {"_id": ObjectId(challenge_id)}, {"$set": {"archived": True}}
+        {"_id": ObjectId(challenge_id), "user_id": user_id}, {"$set": {"archived": True}}
     )
     return {"ok": True}
 
 
 @router.get("/{challenge_id}", response_model=ChallengeResponse)
-async def get_challenge(challenge_id: str):
+async def get_challenge(challenge_id: str, user: dict = Depends(get_current_user)):
     db = get_db()
-    doc = await db.challenges.find_one({"_id": ObjectId(challenge_id)})
-    streak_data = await recalc_streak(db, doc)
+    user_id = user["_id"]
+    doc = await db.challenges.find_one({"_id": ObjectId(challenge_id), "user_id": user_id})
+    streak_data = await recalc_streak(db, doc, user_id)
     resp = doc_to_response(doc, streak_data.get("milestones"))
     resp.update(streak_data)
     return resp
 
 
 @router.get("/{challenge_id}/calendar")
-async def get_challenge_calendar(challenge_id: str, start: str = "", end: str = ""):
+async def get_challenge_calendar(challenge_id: str, start: str = "", end: str = "", user: dict = Depends(get_current_user)):
     """Get dates where all habits in challenge were completed."""
     db = get_db()
-    doc = await db.challenges.find_one({"_id": ObjectId(challenge_id)})
+    user_id = user["_id"]
+    doc = await db.challenges.find_one({"_id": ObjectId(challenge_id), "user_id": user_id})
     habit_ids = doc.get("habit_ids", [])
     if not habit_ids:
         return []
 
     date_sets = []
     for hid in habit_ids:
-        query = {"habit_id": hid, "completed": True}
+        query = {"habit_id": hid, "completed": True, "user_id": user_id}
         if start and end:
             query["date"] = {"$gte": start, "$lte": end}
         logs = await db.habit_logs.find(query).to_list(length=None)
@@ -253,19 +256,20 @@ async def get_challenge_calendar(challenge_id: str, start: str = "", end: str = 
 
 
 @router.get("/{challenge_id}/today")
-async def get_challenge_today(challenge_id: str):
+async def get_challenge_today(challenge_id: str, user: dict = Depends(get_current_user)):
     """Get today's status for each habit in challenge."""
     db = get_db()
-    doc = await db.challenges.find_one({"_id": ObjectId(challenge_id)})
+    user_id = user["_id"]
+    doc = await db.challenges.find_one({"_id": ObjectId(challenge_id), "user_id": user_id})
     today_str = date.today().isoformat()
     habit_ids = doc.get("habit_ids", [])
 
     results = []
     for hid in habit_ids:
-        habit = await db.habits.find_one({"_id": ObjectId(hid)})
+        habit = await db.habits.find_one({"_id": ObjectId(hid), "user_id": user_id})
         if not habit:
             continue
-        log = await db.habit_logs.find_one({"habit_id": hid, "date": today_str})
+        log = await db.habit_logs.find_one({"habit_id": hid, "date": today_str, "user_id": user_id})
         results.append({
             "habit_id": hid,
             "name": habit["name"],

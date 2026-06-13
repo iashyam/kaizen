@@ -17,9 +17,6 @@ class BudgetTodayResponse(BaseModel):
     date: str
     daily_allowance: int
     available_budget: int
-    total_spent_this_month: int
-    total_allowance_this_month: int
-    days_in_month_so_far: int
     logged_today: bool
     today_spent: int
 

@@ -1,13 +1,35 @@
 const BASE = '/api';
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
+  const token = localStorage.getItem('token');
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
   const res = await fetch(`${BASE}${path}`, {
-    headers: { 'Content-Type': 'application/json' },
+    headers,
     ...options,
   });
+  if (res.status === 401) {
+    localStorage.removeItem('token');
+    window.location.href = '/login';
+    throw new Error('Unauthorized');
+  }
   if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
   return res.json();
 }
+
+// Auth
+export interface User { id: string; email: string; name: string; }
+export interface TokenResponse { access_token: string; token_type: string; user: User; }
+
+export const authSignup = (data: { email: string; password: string; name: string }) =>
+  request<TokenResponse>('/auth/signup', { method: 'POST', body: JSON.stringify(data) });
+export const authLogin = (data: { email: string; password: string }) =>
+  request<TokenResponse>('/auth/login', { method: 'POST', body: JSON.stringify(data) });
+export const authMe = () => request<User>('/auth/me');
 
 // Habits
 export const getHabitsToday = () => request<HabitWithStatus[]>('/habits/today');
@@ -104,9 +126,6 @@ export interface BudgetToday {
   date: string;
   daily_allowance: number;
   available_budget: number;
-  total_spent_this_month: number;
-  total_allowance_this_month: number;
-  days_in_month_so_far: number;
   logged_today: boolean;
   today_spent: number;
 }

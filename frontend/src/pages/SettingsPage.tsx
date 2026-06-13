@@ -5,9 +5,11 @@ import {
   getVapidPublicKey, subscribePush, testNotification,
   withdrawSavings,
 } from '../api';
-import { Bell, BellRing, Send, Wallet, MessageCircle, Smartphone, PiggyBank } from 'lucide-react';
+import { Bell, BellRing, Send, Wallet, MessageCircle, Smartphone, PiggyBank, LogOut } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function SettingsPage() {
+  const { user, logout } = useAuth();
   const queryClient = useQueryClient();
   const { data: settings } = useQuery({ queryKey: ['settings'], queryFn: getSettings });
 
@@ -169,6 +171,20 @@ export default function SettingsPage() {
             {JSON.stringify(testMutation.data, null, 2)}
           </pre>
         )}
+      </Section>
+
+      {/* Account */}
+      <Section icon={<LogOut size={18} />} title="Account" color="text-red-400">
+        {user && (
+          <p className="text-xs text-slate-500">Signed in as <span className="text-slate-400">{user.email}</span></p>
+        )}
+        <button
+          onClick={logout}
+          className="w-full flex items-center justify-center gap-2 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 px-4 py-3 rounded-xl text-sm font-semibold transition-all active:scale-[0.98]"
+        >
+          <LogOut size={16} />
+          Sign Out
+        </button>
       </Section>
 
     </div>

@@ -9,7 +9,6 @@ export default function BudgetSummary({ budget }: Props) {
   const spent = budget.today_spent;
   const available = budget.available_budget;
   const isOver = available < 0;
-  const savedThisMonth = budget.total_allowance_this_month - budget.total_spent_this_month;
 
   // Progress: how much of today's portion is spent
   const dailyProgress = budget.daily_allowance > 0
@@ -20,7 +19,7 @@ export default function BudgetSummary({ budget }: Props) {
     <div className="bg-gradient-to-br from-indigo-600/20 via-slate-800/80 to-violet-600/10 rounded-3xl p-6 border border-indigo-500/20 shadow-xl shadow-indigo-500/5">
       {/* Available budget - hero number */}
       <div className="text-center mb-6">
-        <div className="text-xs text-slate-500 font-medium uppercase tracking-wider mb-2">Available Today</div>
+        <div className="text-xs text-slate-500 font-medium uppercase tracking-wider mb-2">Available Balance</div>
         <div className={`text-5xl font-extrabold tracking-tight ${isOver ? 'text-red-400' : 'text-white'}`}>
           <span className="text-2xl font-medium text-slate-500 mr-1">&#8377;</span>
           {Math.abs(available).toLocaleString('en-IN')}
@@ -64,19 +63,19 @@ export default function BudgetSummary({ budget }: Props) {
         <div className="bg-slate-800/60 rounded-2xl p-4 border border-slate-700/30">
           <div className="flex items-center gap-1.5 mb-1">
             <TrendingDown size={12} className="text-slate-500" />
-            <span className="text-[11px] text-slate-500 font-medium">Month Spent</span>
+            <span className="text-[11px] text-slate-500 font-medium">Today Spent</span>
           </div>
           <div className="text-lg font-bold text-slate-200">
-            &#8377;{budget.total_spent_this_month.toLocaleString('en-IN')}
+            &#8377;{spent.toLocaleString('en-IN')}
           </div>
         </div>
         <div className="bg-slate-800/60 rounded-2xl p-4 border border-slate-700/30">
           <div className="flex items-center gap-1.5 mb-1">
             <TrendingUp size={12} className="text-emerald-500" />
-            <span className="text-[11px] text-slate-500 font-medium">Saved</span>
+            <span className="text-[11px] text-slate-500 font-medium">Daily Rate</span>
           </div>
-          <div className={`text-lg font-bold ${savedThisMonth >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-            &#8377;{Math.abs(savedThisMonth).toLocaleString('en-IN')}
+          <div className="text-lg font-bold text-emerald-400">
+            &#8377;{budget.daily_allowance.toLocaleString('en-IN')}
           </div>
         </div>
       </div>

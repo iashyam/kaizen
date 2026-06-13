@@ -11,44 +11,48 @@ async def send_habit_reminder(time_of_day: str):
     from services.telegram import send_telegram
 
     db = get_db()
-    doc = await db.settings.find_one({"_id": "app_settings"})
-    if not doc:
-        return
-
     today_str = date.today().isoformat()
-    habits = await db.habits.find({
-        "archived": {"$ne": True},
-        "category": {"$in": ["morning"] if time_of_day == "morning" else ["evening"]},
-    }).to_list(length=None)
 
-    if not habits:
-        return
+    # Iterate all users' settings
+    async for doc in db.settings.find({}):
+        user_id = doc.get("user_id")
+        if not user_id:
+            continue
 
-    completed = 0
-    for h in habits:
-        log = await db.habit_logs.find_one({
-            "habit_id": str(h["_id"]), "date": today_str, "completed": True
-        })
-        if log:
-            completed += 1
+        habits = await db.habits.find({
+            "archived": {"$ne": True},
+            "category": {"$in": ["morning"] if time_of_day == "morning" else ["evening"]},
+            "user_id": user_id,
+        }).to_list(length=None)
 
-    remaining = len(habits) - completed
-    if remaining == 0:
-        return
+        if not habits:
+            continue
 
-    msg = f"You have {remaining} {time_of_day} habit{'s' if remaining != 1 else ''} left to complete!"
+        completed = 0
+        for h in habits:
+            log = await db.habit_logs.find_one({
+                "habit_id": str(h["_id"]), "date": today_str, "completed": True, "user_id": user_id
+            })
+            if log:
+                completed += 1
 
-    if doc.get("push_subscription"):
-        try:
-            await send_push_notification(doc["push_subscription"], f"{time_of_day.title()} Habits", msg)
-        except Exception:
-            pass
+        remaining = len(habits) - completed
+        if remaining == 0:
+            continue
 
-    if doc.get("telegram_chat_id"):
-        try:
-            await send_telegram(doc["telegram_chat_id"], msg)
-        except Exception:
-            pass
+        msg = f"You have {remaining} {time_of_day} habit{'s' if remaining != 1 else ''} left to complete!"
+
+        if doc.get("push_subscription"):
+            try:
+                await send_push_notification(doc["push_subscription"], f"{time_of_day.title()} Habits", msg)
+            except Exception:
+                pass
+
+        if doc.get("telegram_chat_id"):
+            try:
+                await send_telegram(doc["telegram_chat_id"], msg)
+            except Exception:
+                pass
 
 
 async def send_budget_reminder():
@@ -58,27 +62,29 @@ async def send_budget_reminder():
     from services.telegram import send_telegram
 
     db = get_db()
-    doc = await db.settings.find_one({"_id": "app_settings"})
-    if not doc:
-        return
 
-    budget = await get_today_budget(db)
-    if budget["logged_today"]:
-        return
+    async for doc in db.settings.find({}):
+        user_id = doc.get("user_id")
+        if not user_id:
+            continue
 
-    msg = f"Don't forget to log today's spending! Available budget: {budget['available_budget']} INR"
+        budget = await get_today_budget(db, user_id)
+        if budget["logged_today"]:
+            continue
 
-    if doc.get("push_subscription"):
-        try:
-            await send_push_notification(doc["push_subscription"], "Budget Reminder", msg)
-        except Exception:
-            pass
+        msg = f"Don't forget to log today's spending! Available budget: {budget['available_budget']} INR"
 
-    if doc.get("telegram_chat_id"):
-        try:
-            await send_telegram(doc["telegram_chat_id"], msg)
-        except Exception:
-            pass
+        if doc.get("push_subscription"):
+            try:
+                await send_push_notification(doc["push_subscription"], "Budget Reminder", msg)
+            except Exception:
+                pass
+
+        if doc.get("telegram_chat_id"):
+            try:
+                await send_telegram(doc["telegram_chat_id"], msg)
+            except Exception:
+                pass
 
 
 def start_scheduler():

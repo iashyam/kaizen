@@ -1,28 +1,18 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from bson import ObjectId
 
+from auth import get_current_user
 from database import connect_db, close_db, get_db
-from routers import habits, budget, notifications, todos, challenges
+from routers import habits, budget, notifications, todos, challenges, auth
 from services.scheduler import start_scheduler, stop_scheduler
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await connect_db()
-    # Ensure default settings exist
-    db = get_db()
-    existing = await db.settings.find_one({"_id": "app_settings"})
-    if not existing:
-        await db.settings.insert_one({
-            "_id": "app_settings",
-            "daily_allowance": 500,
-            "monthly_reset_day": 1,
-            "telegram_chat_id": "",
-            "timezone": "Asia/Kolkata",
-        })
     start_scheduler()
     yield
     stop_scheduler()
@@ -39,6 +29,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(auth.router)
 app.include_router(habits.router)
 app.include_router(budget.router)
 app.include_router(notifications.router)
@@ -58,12 +49,13 @@ class ReorderItem(BaseModel):
 
 
 @app.post("/api/reorder")
-async def reorder(items: list[ReorderItem]):
+async def reorder(items: list[ReorderItem], user: dict = Depends(get_current_user)):
     db = get_db()
+    user_id = user["_id"]
     for item in items:
         collection = db.habits if item.type == "habit" else db.todos
         await collection.update_one(
-            {"_id": ObjectId(item.id)},
+            {"_id": ObjectId(item.id), "user_id": user_id},
             {"$set": {"order": item.order}},
         )
     return {"ok": True}
