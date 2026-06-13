@@ -22,7 +22,8 @@ async def sync_balance(db, user_id: str) -> dict:
             {"$set": {"balance": balance, "last_balance_date": today_str}},
         )
     elif not last_str:
-        # First time — just set today, no retroactive add
+        # First time — give today's allowance
+        balance += daily_allowance
         await db.settings.update_one(
             {"user_id": user_id},
             {"$set": {"balance": balance, "last_balance_date": today_str}},
