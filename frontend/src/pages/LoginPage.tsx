@@ -25,7 +25,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-svh bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 flex items-center justify-center px-4">
+    <div className="min-h-svh bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 flex items-center justify-center px-4 pt-[env(safe-area-inset-top)]">
       <div className="w-full max-w-sm space-y-6">
         <div className="text-center">
           <h1 className="text-3xl font-bold text-slate-100">Life Tracker</h1>
