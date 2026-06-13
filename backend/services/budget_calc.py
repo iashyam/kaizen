@@ -5,7 +5,16 @@ async def sync_balance(db, user_id: str) -> dict:
     """Add daily allowance for any missed days. Call before reading balance."""
     settings = await db.settings.find_one({"user_id": user_id})
     if not settings:
-        return {"balance": 0, "daily_allowance": 500, "last_balance_date": None}
+        # New user — create settings with today's allowance
+        daily_allowance = 500
+        settings = {
+            "user_id": user_id,
+            "daily_allowance": daily_allowance,
+            "balance": daily_allowance,
+            "last_balance_date": date.today().isoformat(),
+        }
+        await db.settings.insert_one(settings)
+        return settings
 
     balance = settings.get("balance", 0)
     daily_allowance = settings.get("daily_allowance", 500)
