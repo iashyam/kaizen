@@ -15,10 +15,25 @@ export default function TodoSection() {
 
   const addMutation = useMutation({
     mutationFn: createTodo,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['todos-today'] });
+    onMutate: async (data) => {
+      await queryClient.cancelQueries({ queryKey: ['todos-today'] });
+      const prev = queryClient.getQueryData<Awaited<ReturnType<typeof getTodosToday>>>(['todos-today']);
+      const optimistic = {
+        id: `temp-${Date.now()}`,
+        name: data.name,
+        due_date: new Date().toISOString().split('T')[0],
+        completed: false,
+        order: (prev?.length ?? 0),
+        created_at: new Date().toISOString(),
+      };
+      queryClient.setQueryData(['todos-today'], [...(prev ?? []), optimistic]);
       setNewTodo('');
+      return { prev };
     },
+    onError: (_err: unknown, _vars: unknown, ctx: { prev?: unknown } | undefined) => {
+      if (ctx?.prev) queryClient.setQueryData(['todos-today'], ctx.prev);
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ['todos-today'] }),
   });
 
   const toggleMutation = useMutation({
@@ -29,12 +44,30 @@ export default function TodoSection() {
         await completeTodo(id);
       }
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['todos-today'] }),
+    onMutate: async ({ id, completed }) => {
+      await queryClient.cancelQueries({ queryKey: ['todos-today'] });
+      const prev = queryClient.getQueryData<any[]>(['todos-today']);
+      queryClient.setQueryData(['todos-today'], prev?.map((t: any) => t.id === id ? { ...t, completed: !completed } : t));
+      return { prev };
+    },
+    onError: (_err: unknown, _vars: unknown, ctx: { prev?: unknown } | undefined) => {
+      if (ctx?.prev) queryClient.setQueryData(['todos-today'], ctx.prev);
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ['todos-today'] }),
   });
 
   const delMutation = useMutation({
     mutationFn: deleteTodo,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['todos-today'] }),
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: ['todos-today'] });
+      const prev = queryClient.getQueryData<any[]>(['todos-today']);
+      queryClient.setQueryData(['todos-today'], prev?.filter((t: any) => t.id !== id));
+      return { prev };
+    },
+    onError: (_err: unknown, _vars: unknown, ctx: { prev?: unknown } | undefined) => {
+      if (ctx?.prev) queryClient.setQueryData(['todos-today'], ctx.prev);
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ['todos-today'] }),
   });
 
   const handleAdd = (e: React.FormEvent) => {

@@ -126,3 +126,14 @@ input, textarea, select {
 .animate-slide-up {
   animation: slide-up 0.3s ease-out;
 }
+
+/* Bottom safe area: use in Safari browser, zero in PWA standalone (no toolbar) */
+:root {
+  --safe-bottom: env(safe-area-inset-bottom);
+}
+
+@media (display-mode: standalone) {
+  :root {
+    --safe-bottom: 0px;
+  }
+}

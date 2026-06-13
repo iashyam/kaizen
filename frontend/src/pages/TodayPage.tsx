@@ -80,27 +80,73 @@ export default function TodayPage() {
       const today = new Date().toISOString().split('T')[0];
       completed ? await uncheckHabit(id, today) : await checkHabit(id, today);
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['habits-today'] }),
+    onMutate: async ({ id, completed }) => {
+      await queryClient.cancelQueries({ queryKey: ['habits-today'] });
+      const prev = queryClient.getQueryData<HabitWithStatus[]>(['habits-today']);
+      queryClient.setQueryData<HabitWithStatus[]>(['habits-today'], old =>
+        old?.map(h => h.id === id ? { ...h, completed_today: !completed, current_streak: completed ? Math.max(0, h.current_streak - 1) : h.current_streak + 1 } : h)
+      );
+      return { prev };
+    },
+    onError: (_err, _vars, ctx) => {
+      if (ctx?.prev) queryClient.setQueryData(['habits-today'], ctx.prev);
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ['habits-today'] }),
   });
 
   const todoToggle = useMutation({
     mutationFn: async ({ id, completed }: { id: string; completed: boolean }) => {
       completed ? await uncompleteTodo(id) : await completeTodo(id);
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['todos-today'] }),
+    onMutate: async ({ id, completed }) => {
+      await queryClient.cancelQueries({ queryKey: ['todos-today'] });
+      const prev = queryClient.getQueryData<Todo[]>(['todos-today']);
+      queryClient.setQueryData<Todo[]>(['todos-today'], old =>
+        old?.map(t => t.id === id ? { ...t, completed: !completed } : t)
+      );
+      return { prev };
+    },
+    onError: (_err, _vars, ctx) => {
+      if (ctx?.prev) queryClient.setQueryData(['todos-today'], ctx.prev);
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ['todos-today'] }),
   });
 
   const todoDeleteMut = useMutation({
     mutationFn: deleteTodo,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['todos-today'] }),
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: ['todos-today'] });
+      const prev = queryClient.getQueryData<Todo[]>(['todos-today']);
+      queryClient.setQueryData<Todo[]>(['todos-today'], old => old?.filter(t => t.id !== id));
+      return { prev };
+    },
+    onError: (_err, _vars, ctx) => {
+      if (ctx?.prev) queryClient.setQueryData(['todos-today'], ctx.prev);
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ['todos-today'] }),
   });
 
   const addTodo = useMutation({
     mutationFn: createTodo,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['todos-today'] });
+    onMutate: async (data) => {
+      await queryClient.cancelQueries({ queryKey: ['todos-today'] });
+      const prev = queryClient.getQueryData<Todo[]>(['todos-today']);
+      const optimistic: Todo = {
+        id: `temp-${Date.now()}`,
+        name: data.name,
+        due_date: new Date().toISOString().split('T')[0],
+        completed: false,
+        order: (prev?.length ?? 0),
+        created_at: new Date().toISOString(),
+      };
+      queryClient.setQueryData<Todo[]>(['todos-today'], old => [...(old ?? []), optimistic]);
       setNewTodo('');
+      return { prev };
     },
+    onError: (_err, _vars, ctx) => {
+      if (ctx?.prev) queryClient.setQueryData(['todos-today'], ctx.prev);
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ['todos-today'] }),
   });
 
   const reorderMutation = useMutation({

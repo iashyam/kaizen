@@ -82,7 +82,7 @@ export default function Layout() {
         <Outlet />
         {/* Spacer for bottom nav when keyboard is closed */}
         {!keyboardOpen && (
-          <div className="h-[calc(5rem+env(safe-area-inset-bottom))]" />
+          <div className="h-[calc(5rem+var(--safe-bottom))]" />
         )}
       </div>
       {!keyboardOpen && <BottomNav />}
