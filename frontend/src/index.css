@@ -17,6 +17,13 @@
 
 * {
   -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  touch-action: manipulation;
+}
+
+html, body {
+  height: 100%;
+  overflow: hidden;
 }
 
 body {
@@ -32,12 +39,14 @@ body {
 }
 
 #root {
-  min-height: 100svh;
+  height: 100%;
+  overflow: hidden;
 }
 
 input, textarea, select {
   user-select: text;
   font-size: 16px;
+  -webkit-touch-callout: default;
 }
 
 @keyframes check-pop {
