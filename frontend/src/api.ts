@@ -64,6 +64,7 @@ export const withdrawSavings = () =>
 
 // Todos
 export const getTodosToday = () => request<Todo[]>('/todos/today');
+export const getTodosByDate = (date: string) => request<Todo[]>(`/todos/by-date?date=${encodeURIComponent(date)}`);
 export const createTodo = (data: { name: string; due_date?: string }) =>
   request<Todo>('/todos', { method: 'POST', body: JSON.stringify(data) });
 export const updateTodo = (id: string, data: { name?: string; due_date?: string }) =>

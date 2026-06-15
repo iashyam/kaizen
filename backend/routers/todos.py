@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from bson import ObjectId
 from datetime import datetime, date
 
@@ -29,6 +29,25 @@ async def get_today_todos(user: dict = Depends(get_current_user)):
         "due_date": {"$lte": today_str},
         "user_id": user_id,
     }).sort("order", 1).to_list(length=None)
+    return [todo_doc_to_response(t) for t in todos]
+
+
+@router.get("/by-date", response_model=list[TodoResponse])
+async def get_todos_by_date(
+    target: str = Query(default=None, alias="date"),
+    user: dict = Depends(get_current_user),
+):
+    db = get_db()
+    user_id = user["_id"]
+    today_str = date.today().isoformat()
+    target_date = target or today_str
+
+    if target_date <= today_str:
+        query = {"due_date": {"$lte": target_date}, "user_id": user_id}
+    else:
+        query = {"due_date": target_date, "user_id": user_id}
+
+    todos = await db.todos.find(query).sort("order", 1).to_list(length=None)
     return [todo_doc_to_response(t) for t in todos]
 
 

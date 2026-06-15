@@ -1,13 +1,14 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   getHabitsToday, checkHabit, uncheckHabit,
-  getTodosToday, createTodo, completeTodo, uncompleteTodo, deleteTodo,
+  getTodosByDate, createTodo, completeTodo, uncompleteTodo, deleteTodo,
   reorderItems,
 } from '../api';
 import type { HabitWithStatus, Todo } from '../api';
 import { CATEGORY_CONFIG } from '../models/habit';
-import { Flame, Plus, GripVertical, Trash2 } from 'lucide-react';
+import { Flame, Plus, GripVertical, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
+import useSwipe from '../hooks/useSwipe';
 import {
   DndContext, closestCenter, PointerSensor, TouchSensor,
   useSensor, useSensors, type DragEndEvent,
@@ -38,9 +39,30 @@ function uniqueId(item: TodayItem) {
   return `${item.kind}-${item.id}`;
 }
 
+function getDateString(offset: number): string {
+  const d = new Date();
+  d.setDate(d.getDate() + offset);
+  return d.toISOString().split('T')[0];
+}
+
+function getDateDisplay(offset: number): string {
+  const d = new Date();
+  d.setDate(d.getDate() + offset);
+  return d.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'short' });
+}
+
 export default function TodayPage() {
   const queryClient = useQueryClient();
   const [newTodo, setNewTodo] = useState('');
+  const [dayOffset, setDayOffset] = useState(0);
+  const pageRef = useRef<HTMLDivElement>(null);
+
+  const selectedDate = getDateString(dayOffset);
+  const isToday = dayOffset === 0;
+
+  const goNext = useCallback(() => setDayOffset(prev => Math.min(prev + 1, 1)), []);
+  const goPrev = useCallback(() => setDayOffset(prev => Math.max(prev - 1, 0)), []);
+  useSwipe(pageRef, { onSwipeLeft: goNext, onSwipeRight: goPrev });
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -50,24 +72,27 @@ export default function TodayPage() {
   const { data: habits, isLoading: habitsLoading } = useQuery({
     queryKey: ['habits-today'],
     queryFn: getHabitsToday,
+    enabled: isToday,
   });
 
   const { data: todos, isLoading: todosLoading } = useQuery({
-    queryKey: ['todos-today'],
-    queryFn: getTodosToday,
+    queryKey: ['todos', selectedDate],
+    queryFn: () => getTodosByDate(selectedDate),
   });
 
   const items: TodayItem[] = useMemo(() => {
     const merged: TodayItem[] = [];
-    for (const h of habits ?? []) {
-      merged.push({ kind: 'habit', data: h, id: h.id, name: h.name, completed: h.completed_today, order: h.order });
+    if (isToday) {
+      for (const h of habits ?? []) {
+        merged.push({ kind: 'habit', data: h, id: h.id, name: h.name, completed: h.completed_today, order: h.order });
+      }
     }
     for (const t of todos ?? []) {
       merged.push({ kind: 'todo', data: t, id: t.id, name: t.name, completed: t.completed, order: t.order });
     }
     merged.sort((a, b) => a.order - b.order);
     return merged;
-  }, [habits, todos]);
+  }, [habits, todos, isToday]);
 
   const incomplete = items.filter(i => !i.completed);
   const completed = items.filter(i => i.completed);
@@ -94,66 +119,68 @@ export default function TodayPage() {
     onSettled: () => queryClient.invalidateQueries({ queryKey: ['habits-today'] }),
   });
 
+  const todosKey = ['todos', selectedDate];
+
   const todoToggle = useMutation({
     mutationFn: async ({ id, completed }: { id: string; completed: boolean }) => {
       completed ? await uncompleteTodo(id) : await completeTodo(id);
     },
     onMutate: async ({ id, completed }) => {
-      await queryClient.cancelQueries({ queryKey: ['todos-today'] });
-      const prev = queryClient.getQueryData<Todo[]>(['todos-today']);
-      queryClient.setQueryData<Todo[]>(['todos-today'], old =>
+      await queryClient.cancelQueries({ queryKey: todosKey });
+      const prev = queryClient.getQueryData<Todo[]>(todosKey);
+      queryClient.setQueryData<Todo[]>(todosKey, old =>
         old?.map(t => t.id === id ? { ...t, completed: !completed } : t)
       );
       return { prev };
     },
     onError: (_err, _vars, ctx) => {
-      if (ctx?.prev) queryClient.setQueryData(['todos-today'], ctx.prev);
+      if (ctx?.prev) queryClient.setQueryData(todosKey, ctx.prev);
     },
-    onSettled: () => queryClient.invalidateQueries({ queryKey: ['todos-today'] }),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: todosKey }),
   });
 
   const todoDeleteMut = useMutation({
     mutationFn: deleteTodo,
     onMutate: async (id) => {
-      await queryClient.cancelQueries({ queryKey: ['todos-today'] });
-      const prev = queryClient.getQueryData<Todo[]>(['todos-today']);
-      queryClient.setQueryData<Todo[]>(['todos-today'], old => old?.filter(t => t.id !== id));
+      await queryClient.cancelQueries({ queryKey: todosKey });
+      const prev = queryClient.getQueryData<Todo[]>(todosKey);
+      queryClient.setQueryData<Todo[]>(todosKey, old => old?.filter(t => t.id !== id));
       return { prev };
     },
     onError: (_err, _vars, ctx) => {
-      if (ctx?.prev) queryClient.setQueryData(['todos-today'], ctx.prev);
+      if (ctx?.prev) queryClient.setQueryData(todosKey, ctx.prev);
     },
-    onSettled: () => queryClient.invalidateQueries({ queryKey: ['todos-today'] }),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: todosKey }),
   });
 
   const addTodo = useMutation({
     mutationFn: createTodo,
     onMutate: async (data) => {
-      await queryClient.cancelQueries({ queryKey: ['todos-today'] });
-      const prev = queryClient.getQueryData<Todo[]>(['todos-today']);
+      await queryClient.cancelQueries({ queryKey: todosKey });
+      const prev = queryClient.getQueryData<Todo[]>(todosKey);
       const optimistic: Todo = {
         id: `temp-${Date.now()}`,
         name: data.name,
-        due_date: new Date().toISOString().split('T')[0],
+        due_date: selectedDate,
         completed: false,
         order: (prev?.length ?? 0),
         created_at: new Date().toISOString(),
       };
-      queryClient.setQueryData<Todo[]>(['todos-today'], old => [...(old ?? []), optimistic]);
+      queryClient.setQueryData<Todo[]>(todosKey, old => [...(old ?? []), optimistic]);
       setNewTodo('');
       return { prev };
     },
     onError: (_err, _vars, ctx) => {
-      if (ctx?.prev) queryClient.setQueryData(['todos-today'], ctx.prev);
+      if (ctx?.prev) queryClient.setQueryData(todosKey, ctx.prev);
     },
-    onSettled: () => queryClient.invalidateQueries({ queryKey: ['todos-today'] }),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: todosKey }),
   });
 
   const reorderMutation = useMutation({
     mutationFn: reorderItems,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['habits-today'] });
-      queryClient.invalidateQueries({ queryKey: ['todos-today'] });
+      queryClient.invalidateQueries({ queryKey: todosKey });
     },
   });
 
@@ -189,22 +216,38 @@ export default function TodayPage() {
   const handleAddTodo = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newTodo.trim()) return;
-    addTodo.mutate({ name: newTodo.trim() });
+    addTodo.mutate({ name: newTodo.trim(), due_date: selectedDate });
   };
 
-  const hour = new Date().getHours();
-  const greeting = hour < 12 ? 'Good Morning' : hour < 17 ? 'Good Afternoon' : 'Good Evening';
-  const isLoading = habitsLoading || todosLoading;
+  const isLoading = (isToday && habitsLoading) || todosLoading;
 
   return (
-    <div className="px-4 pt-6 max-w-lg mx-auto">
+    <div ref={pageRef} className="px-4 pt-6 max-w-lg mx-auto">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <div>
-          <div className="text-sm text-slate-500 font-medium">
-            {new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'short' })}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={goPrev}
+            disabled={isToday}
+            className="text-slate-400 disabled:opacity-20 p-1 transition-opacity"
+          >
+            <ChevronLeft size={20} />
+          </button>
+          <div className="text-center min-w-[130px]">
+            <div className="text-sm text-slate-500 font-medium">
+              {getDateDisplay(dayOffset)}
+            </div>
+            <h1 className="text-2xl font-bold text-slate-100 mt-1">
+              {isToday ? 'Today' : 'Tomorrow'}
+            </h1>
           </div>
-          <h1 className="text-2xl font-bold text-slate-100 mt-1">{greeting}</h1>
+          <button
+            onClick={goNext}
+            disabled={dayOffset === 1}
+            className="text-slate-400 disabled:opacity-20 p-1 transition-opacity"
+          >
+            <ChevronRight size={20} />
+          </button>
         </div>
 
         <div className="relative w-14 h-14">
@@ -231,7 +274,9 @@ export default function TodayPage() {
       {totalItems > 0 && progress === 1 && (
         <div className="bg-gradient-to-r from-emerald-500/20 to-teal-500/10 border border-emerald-500/20 rounded-2xl p-4 mb-5 text-center animate-fade-in-up">
           <div className="text-2xl mb-1">🎉</div>
-          <div className="text-sm font-semibold text-emerald-400">All done for today!</div>
+          <div className="text-sm font-semibold text-emerald-400">
+            {isToday ? 'All done for today!' : 'All set for tomorrow!'}
+          </div>
         </div>
       )}
 
@@ -241,7 +286,7 @@ export default function TodayPage() {
           type="text"
           value={newTodo}
           onChange={e => setNewTodo(e.target.value)}
-          placeholder="Add a task..."
+          placeholder={isToday ? 'Add a task...' : 'Plan for tomorrow...'}
           className="flex-1 bg-slate-800/60 border border-slate-700/40 rounded-xl px-4 py-2.5 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/30"
         />
         <button
@@ -301,9 +346,13 @@ export default function TodayPage() {
 
           {totalItems === 0 && (
             <div className="text-center py-12">
-              <div className="text-5xl mb-4">🌱</div>
-              <div className="text-lg font-semibold text-slate-300 mb-1">Your Day is Clear</div>
-              <div className="text-sm text-slate-500">Add tasks above or create habits in the Habits tab</div>
+              <div className="text-5xl mb-4">{isToday ? '🌱' : '📝'}</div>
+              <div className="text-lg font-semibold text-slate-300 mb-1">
+                {isToday ? 'Your Day is Clear' : 'Nothing Planned Yet'}
+              </div>
+              <div className="text-sm text-slate-500">
+                {isToday ? 'Add tasks above or create habits in the Habits tab' : 'Add tasks above to plan your tomorrow'}
+              </div>
             </div>
           )}
         </>
