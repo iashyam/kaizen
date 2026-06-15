@@ -9,8 +9,9 @@ import { CATEGORY_CONFIG } from '../models/habit';
 import {
   Plus, X, Trash2, Flame, Trophy, ChevronDown,
   Swords, CheckCircle2, Circle, Shield, Zap, Target,
-  Crown, Star, Flag, ArrowRight, Sparkles, RotateCcw,
+  Crown, Star, Flag, ArrowRight, Sparkles, RotateCcw, Share2,
 } from 'lucide-react';
+import CelebrationModal, { type CelebrationData } from '../components/CelebrationModal';
 
 function getStreakTier(streak: number) {
   if (streak >= 30) return { label: 'Legendary', color: 'text-amber-300', bg: 'from-amber-500/20 to-yellow-500/10', border: 'border-amber-500/30', icon: Crown };
@@ -316,6 +317,7 @@ function ExpandedChallenge({
   onDelete: () => void;
 }) {
   const queryClient = useQueryClient();
+  const [showCelebration, setShowCelebration] = useState(false);
 
   const extendMutation = useMutation({
     mutationFn: (extra: number) => extendChallenge(challenge.id, extra),
@@ -351,14 +353,23 @@ function ExpandedChallenge({
           <div className="text-xs text-amber-400/60 mb-3">
             Completed on {new Date(challenge.completed_at!).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
           </div>
-          <button
-            onClick={() => extendMutation.mutate(30)}
-            disabled={extendMutation.isPending}
-            className="px-4 py-2 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-bold active:scale-95 transition-transform disabled:opacity-50 flex items-center gap-2 mx-auto"
-          >
-            <ArrowRight size={14} />
-            Extend +30 Days
-          </button>
+          <div className="flex items-center justify-center gap-2">
+            <button
+              onClick={() => setShowCelebration(true)}
+              className="px-4 py-2 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-bold active:scale-95 transition-transform flex items-center gap-2"
+            >
+              <Share2 size={14} />
+              Share Achievement
+            </button>
+            <button
+              onClick={() => extendMutation.mutate(30)}
+              disabled={extendMutation.isPending}
+              className="px-4 py-2 rounded-lg bg-slate-700/60 border border-amber-500/20 text-amber-400 text-sm font-bold active:scale-95 transition-transform disabled:opacity-50 flex items-center gap-2"
+            >
+              <ArrowRight size={14} />
+              +30 Days
+            </button>
+          </div>
         </div>
       )}
 
@@ -465,6 +476,33 @@ function ExpandedChallenge({
         <Trash2 size={13} />
         Delete Challenge
       </button>
+
+      {/* Also add share for non-completed but all-done-today */}
+      {!isCompleted && today?.all_completed_today && (
+        <button
+          onClick={() => setShowCelebration(true)}
+          className="flex items-center gap-2 text-emerald-400 text-xs px-3 py-2 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/15 transition-all w-full justify-center border border-emerald-500/15 font-semibold"
+        >
+          <Share2 size={13} />
+          Share Today's Progress
+        </button>
+      )}
+
+      {showCelebration && (
+        <CelebrationModal
+          data={{
+            type: 'challenge',
+            challengeName: challenge.name,
+            targetDays: challenge.target_days,
+            currentStreak: challenge.current_streak,
+            longestStreak: challenge.longest_streak,
+            completedDate: challenge.completed_at
+              ? challenge.completed_at.split('T')[0]
+              : new Date().toISOString().split('T')[0],
+          }}
+          onClose={() => setShowCelebration(false)}
+        />
+      )}
     </div>
   );
 }

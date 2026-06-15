@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useCallback } from 'react';
+import { useState, useMemo, useRef, useCallback, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   getHabitsToday, checkHabit, uncheckHabit,
@@ -7,8 +7,9 @@ import {
 } from '../api';
 import type { HabitWithStatus, Todo } from '../api';
 import { CATEGORY_CONFIG } from '../models/habit';
-import { Flame, Plus, GripVertical, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Flame, Plus, GripVertical, Trash2, ChevronLeft, ChevronRight, Share2 } from 'lucide-react';
 import useSwipe from '../hooks/useSwipe';
+import CelebrationModal, { type CelebrationData } from '../components/CelebrationModal';
 import {
   DndContext, closestCenter, PointerSensor, TouchSensor,
   useSensor, useSensors, type DragEndEvent,
@@ -99,6 +100,29 @@ export default function TodayPage() {
   const totalCompleted = completed.length;
   const totalItems = items.length;
   const progress = totalItems > 0 ? totalCompleted / totalItems : 0;
+
+  // Celebration state
+  const [showCelebration, setShowCelebration] = useState(false);
+  const celebratedRef = useRef(false);
+  const allDone = totalItems > 0 && progress === 1 && isToday;
+
+  useEffect(() => {
+    if (allDone && !celebratedRef.current) {
+      celebratedRef.current = true;
+      setShowCelebration(true);
+    }
+    if (!allDone) {
+      celebratedRef.current = false;
+    }
+  }, [allDone]);
+
+  const celebrationData: CelebrationData | null = allDone ? {
+    type: 'daily',
+    date: selectedDate,
+    totalTasks: totalItems,
+    habitsCount: completed.filter(i => i.kind === 'habit').length,
+    todosCount: completed.filter(i => i.kind === 'todo').length,
+  } : null;
 
   const habitToggle = useMutation({
     mutationFn: async ({ id, completed }: { id: string; completed: boolean }) => {
@@ -273,11 +297,28 @@ export default function TodayPage() {
       {/* All done */}
       {totalItems > 0 && progress === 1 && (
         <div className="bg-gradient-to-r from-emerald-500/20 to-teal-500/10 border border-emerald-500/20 rounded-2xl p-4 mb-5 text-center animate-fade-in-up">
-          <div className="text-2xl mb-1">🎉</div>
-          <div className="text-sm font-semibold text-emerald-400">
+          <div className="text-2xl mb-1">{'\u{1F389}'}</div>
+          <div className="text-sm font-semibold text-emerald-400 mb-2">
             {isToday ? 'All done for today!' : 'All set for tomorrow!'}
           </div>
+          {isToday && (
+            <button
+              onClick={() => setShowCelebration(true)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 text-xs font-semibold transition-all active:scale-95"
+            >
+              <Share2 size={12} />
+              Share Progress
+            </button>
+          )}
         </div>
+      )}
+
+      {/* Celebration modal */}
+      {showCelebration && celebrationData && (
+        <CelebrationModal
+          data={celebrationData}
+          onClose={() => setShowCelebration(false)}
+        />
       )}
 
       {/* Quick add */}
