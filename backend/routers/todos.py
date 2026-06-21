@@ -26,8 +26,11 @@ async def get_today_todos(user: dict = Depends(get_current_user)):
     user_id = user["_id"]
     today_str = date.today().isoformat()
     todos = await db.todos.find({
-        "due_date": {"$lte": today_str},
         "user_id": user_id,
+        "$or": [
+            {"due_date": {"$lte": today_str}, "completed": False},
+            {"due_date": today_str, "completed": True},
+        ],
     }).sort("order", 1).to_list(length=None)
     return [todo_doc_to_response(t) for t in todos]
 
@@ -43,7 +46,14 @@ async def get_todos_by_date(
     target_date = target or today_str
 
     if target_date <= today_str:
-        query = {"due_date": {"$lte": target_date}, "user_id": user_id}
+        # Show: uncompleted tasks up to target date + tasks completed on target date
+        query = {
+            "user_id": user_id,
+            "$or": [
+                {"due_date": {"$lte": target_date}, "completed": False},
+                {"due_date": target_date, "completed": True},
+            ],
+        }
     else:
         query = {"due_date": target_date, "user_id": user_id}
 

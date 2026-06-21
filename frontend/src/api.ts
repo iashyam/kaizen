@@ -34,7 +34,7 @@ export const authMe = () => request<User>('/auth/me');
 // Habits
 export const getHabitsToday = () => request<HabitWithStatus[]>('/habits/today');
 export const getHabits = () => request<Habit[]>('/habits');
-export const createHabit = (data: { name: string; category: string; repeat_type?: string; repeat_days?: number[]; reminder_time?: string }) =>
+export const createHabit = (data: { name: string; category: string; emoji?: string; repeat_type?: string; repeat_days?: number[]; reminder_time?: string }) =>
   request<Habit>('/habits', { method: 'POST', body: JSON.stringify(data) });
 export const updateHabit = (id: string, data: Partial<Habit>) =>
   request<Habit>(`/habits/${id}`, { method: 'PUT', body: JSON.stringify(data) });
@@ -113,6 +113,7 @@ export interface Habit {
   reminder_time?: string;
   repeat_type: string;  // daily | specific_days | weekly
   repeat_days: number[]; // 0=Mon..6=Sun
+  emoji?: string;
   order: number;
   created_at: string;
   archived: boolean;

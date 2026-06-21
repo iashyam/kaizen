@@ -4,10 +4,10 @@ import { getHabits, createHabit, deleteHabit, getHabitStreak } from '../api';
 import type { Habit } from '../api';
 import HabitCalendar from '../components/HabitCalendar';
 import StreakBadge from '../components/StreakBadge';
-import { CATEGORY_CONFIG } from '../models/habit';
+import { CATEGORY_CONFIG, DEFAULT_EMOJIS } from '../models/habit';
 import { Plus, X, Trash2, ChevronRight, Repeat, Calendar } from 'lucide-react';
 
-const CATEGORIES = ['morning', 'evening', 'weekend', 'custom'] as const;
+const CATEGORIES = ['morning', 'custom', 'evening', 'weekend'] as const;
 const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const REPEAT_OPTIONS = [
   { value: 'daily', label: 'Every Day', icon: '\u{1F4C5}' },
@@ -31,6 +31,7 @@ export default function HabitsPage() {
   const [newCategory, setNewCategory] = useState('morning');
   const [newRepeatType, setNewRepeatType] = useState('daily');
   const [newRepeatDays, setNewRepeatDays] = useState<number[]>([]);
+  const [newEmoji, setNewEmoji] = useState('');
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const { data: habits, isLoading } = useQuery({
@@ -44,6 +45,7 @@ export default function HabitsPage() {
       queryClient.invalidateQueries({ queryKey: ['habits'] });
       queryClient.invalidateQueries({ queryKey: ['habits-today'] });
       setNewName('');
+      setNewEmoji('');
       setNewRepeatType('daily');
       setNewRepeatDays([]);
       setShowAdd(false);
@@ -64,6 +66,7 @@ export default function HabitsPage() {
     addMutation.mutate({
       name: newName.trim(),
       category: newCategory,
+      emoji: newEmoji || undefined,
       repeat_type: newRepeatType,
       repeat_days: newRepeatType === 'specific_days' ? newRepeatDays : [],
     });
@@ -110,6 +113,27 @@ export default function HabitsPage() {
             autoFocus
             className="w-full bg-surface-input border border-brd rounded-xl px-4 py-3 text-txt-primary placeholder-txt-muted focus:outline-none focus:border-duo-green/50 focus:ring-2 focus:ring-duo-green/20 text-[15px] transition-all"
           />
+
+          {/* Emoji */}
+          <div>
+            <div className="text-xs text-txt-secondary font-bold mb-2">Icon</div>
+            <div className="flex gap-1.5 flex-wrap">
+              {DEFAULT_EMOJIS.map(e => (
+                <button
+                  key={e}
+                  type="button"
+                  onClick={() => setNewEmoji(newEmoji === e ? '' : e)}
+                  className={`w-9 h-9 rounded-lg text-lg flex items-center justify-center transition-all active:scale-90 ${
+                    newEmoji === e
+                      ? 'bg-duo-green/20 ring-2 ring-duo-green/40'
+                      : 'bg-surface-input'
+                  }`}
+                >
+                  {e}
+                </button>
+              ))}
+            </div>
+          </div>
 
           {/* Category */}
           <div>
@@ -232,7 +256,7 @@ export default function HabitsPage() {
                         : 'bg-surface-card border border-brd rounded-xl'
                     }`}>
                       <div className={`w-10 h-10 rounded-xl ${config.bg} flex items-center justify-center text-lg`}>
-                        {config.icon}
+                        {habit.emoji || config.icon}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="text-[15px] font-semibold text-txt-primary truncate">{habit.name}</div>

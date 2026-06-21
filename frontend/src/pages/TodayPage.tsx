@@ -516,7 +516,7 @@ function UnifiedCard({
         }`}
       >
         {isHabit ? (
-          <span className={`text-lg ${item.completed ? '' : 'opacity-70'}`}>{cat!.icon}</span>
+          <span className={`text-lg ${item.completed ? '' : 'opacity-70'}`}>{(item as any).emoji || cat!.icon}</span>
         ) : (
           item.completed ? (
             <div className="animate-bounce-in">

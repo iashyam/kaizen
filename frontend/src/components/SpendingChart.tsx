@@ -50,7 +50,7 @@ export default function SpendingChart({ logs, dailyAllowance, onClose }: Props) 
                 tick={{ fill: tickColor, fontSize: 11 }}
                 axisLine={false}
                 tickLine={false}
-                tickFormatter={(v: number) => `${(v / 1000).toFixed(0)}k`}
+                tickFormatter={(v: number) => v >= 1000 ? `${(v / 1000).toFixed(v >= 10000 ? 0 : 1)}k` : `${v}`}
               />
               <Tooltip
                 contentStyle={{
