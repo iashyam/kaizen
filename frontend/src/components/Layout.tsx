@@ -66,7 +66,7 @@ export default function Layout() {
 
   return (
     <div
-      className="h-full flex flex-col bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 text-slate-200 overflow-hidden"
+      className="h-full flex flex-col bg-surface-bg text-txt-primary overflow-hidden transition-colors duration-300"
       onClick={handleTap}
     >
       <div

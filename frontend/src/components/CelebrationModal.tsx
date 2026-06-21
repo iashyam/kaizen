@@ -388,13 +388,13 @@ export default function CelebrationModal({
           {/* Close button */}
           <button
             onClick={onClose}
-            className="absolute -top-2 -right-2 z-10 w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-400 hover:text-slate-200 transition-colors"
+            className="absolute -top-2 -right-2 z-10 w-8 h-8 rounded-full bg-surface-card border border-brd flex items-center justify-center text-txt-muted hover:text-txt-primary transition-colors"
           >
             <X size={16} />
           </button>
 
           {/* Card preview */}
-          <div className="rounded-2xl overflow-hidden shadow-2xl shadow-indigo-500/10">
+          <div className="rounded-xl overflow-hidden shadow-2xl shadow-duo-green/10">
             <canvas
               ref={canvasRef}
               className="w-full h-auto"
@@ -411,8 +411,8 @@ export default function CelebrationModal({
               onClick={handleShare}
               className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm transition-all active:scale-95 ${
                 data.type === 'daily'
-                  ? 'bg-gradient-to-r from-indigo-500 to-emerald-500 text-white'
-                  : 'bg-gradient-to-r from-orange-500 to-amber-500 text-white'
+                  ? 'bg-duo-green text-white'
+                  : 'bg-duo-orange text-white'
               }`}
             >
               <Share2 size={16} />
@@ -420,7 +420,7 @@ export default function CelebrationModal({
             </button>
             <button
               onClick={downloadImage}
-              className="px-4 py-3 rounded-xl bg-slate-800 border border-slate-700 text-slate-300 hover:text-white transition-colors active:scale-95"
+              className="px-4 py-3 rounded-xl bg-surface-card border border-brd text-txt-secondary hover:text-txt-primary transition-colors active:scale-95"
             >
               <Download size={16} />
             </button>

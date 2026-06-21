@@ -13,24 +13,24 @@ export default function TodoCard({ todo, onToggle, onDelete }: Props) {
 
   const handleToggle = () => {
     setAnimating(true);
-    setTimeout(() => setAnimating(false), 300);
+    setTimeout(() => setAnimating(false), 500);
     onToggle(todo.id, todo.completed);
   };
 
   return (
     <div className={`flex items-center gap-3 p-3.5 rounded-xl transition-all duration-300 ${
       todo.completed
-        ? 'bg-slate-800/30 border border-slate-700/20'
-        : 'bg-slate-800/60 border border-slate-700/40'
+        ? 'bg-surface-card border border-brd opacity-60'
+        : 'bg-surface-card border border-brd'
     }`}>
       <button
         onClick={handleToggle}
         className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-200 flex-shrink-0 ${
-          animating ? 'animate-check-pop' : ''
+          animating ? 'animate-jelly' : ''
         } ${
           todo.completed
-            ? 'bg-emerald-500 border-emerald-500'
-            : 'border-slate-500 hover:border-emerald-400 active:scale-90'
+            ? 'bg-duo-green border-duo-green'
+            : 'border-txt-muted active:scale-90'
         }`}
       >
         {todo.completed && (
@@ -42,16 +42,15 @@ export default function TodoCard({ todo, onToggle, onDelete }: Props) {
 
       <span className={`flex-1 text-sm transition-all ${
         todo.completed
-          ? 'text-slate-500 line-through'
-          : 'text-slate-200'
+          ? 'text-txt-muted line-through'
+          : 'text-txt-primary'
       }`}>
         {todo.name}
       </span>
 
       <button
         onClick={() => onDelete(todo.id)}
-        className="text-slate-600 hover:text-red-400 p-1 rounded-lg hover:bg-red-500/10 transition-all opacity-0 group-hover:opacity-100"
-        style={{ opacity: 1 }}
+        className="text-txt-muted hover:text-duo-red p-1 rounded-xl hover:bg-duo-red/10 transition-all active:scale-90"
       >
         <Trash2 size={14} />
       </button>

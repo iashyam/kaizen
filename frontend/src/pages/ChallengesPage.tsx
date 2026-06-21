@@ -14,11 +14,11 @@ import {
 import CelebrationModal, { type CelebrationData } from '../components/CelebrationModal';
 
 function getStreakTier(streak: number) {
-  if (streak >= 30) return { label: 'Legendary', color: 'text-amber-300', bg: 'from-amber-500/20 to-yellow-500/10', border: 'border-amber-500/30', icon: Crown };
-  if (streak >= 14) return { label: 'On Fire', color: 'text-orange-400', bg: 'from-orange-500/20 to-red-500/10', border: 'border-orange-500/30', icon: Flame };
-  if (streak >= 7) return { label: 'Rising', color: 'text-violet-400', bg: 'from-violet-500/20 to-purple-500/10', border: 'border-violet-500/30', icon: Zap };
-  if (streak >= 3) return { label: 'Building', color: 'text-sky-400', bg: 'from-sky-500/20 to-blue-500/10', border: 'border-sky-500/30', icon: Target };
-  return { label: 'Starting', color: 'text-slate-400', bg: 'from-slate-500/15 to-slate-600/10', border: 'border-slate-600/30', icon: Shield };
+  if (streak >= 30) return { label: 'Legendary', color: 'text-duo-yellow', bg: 'from-duo-yellow/20 to-duo-orange/10', border: 'border-duo-yellow/30', icon: Crown };
+  if (streak >= 14) return { label: 'On Fire', color: 'text-duo-orange', bg: 'from-duo-orange/20 to-duo-red/10', border: 'border-duo-orange/30', icon: Flame };
+  if (streak >= 7) return { label: 'Rising', color: 'text-duo-purple', bg: 'from-duo-purple/20 to-duo-purple/10', border: 'border-duo-purple/30', icon: Zap };
+  if (streak >= 3) return { label: 'Building', color: 'text-duo-blue', bg: 'from-duo-blue/20 to-duo-blue/10', border: 'border-duo-blue/30', icon: Target };
+  return { label: 'Starting', color: 'text-txt-muted', bg: 'from-surface-input/50 to-surface-input/30', border: 'border-brd', icon: Shield };
 }
 
 const TARGET_PRESETS = [7, 14, 21, 30, 60, 90];
@@ -46,14 +46,14 @@ export default function ChallengesPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-orange-500/20 to-red-500/15 border border-orange-500/20 flex items-center justify-center">
-            <Swords size={22} className="text-orange-400" />
+          <div className="w-11 h-11 rounded-xl bg-duo-orange/15 border border-duo-orange/25 flex items-center justify-center">
+            <Swords size={22} className="text-duo-orange" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-orange-300 via-amber-200 to-yellow-300 bg-clip-text text-transparent">
+            <h1 className="text-2xl font-black text-txt-primary">
               Challenges
             </h1>
-            <div className="text-[11px] text-slate-500 font-medium tracking-wide uppercase">
+            <div className="text-[11px] text-txt-muted font-bold tracking-wide uppercase">
               Don't break the chain
             </div>
           </div>
@@ -61,7 +61,7 @@ export default function ChallengesPage() {
         <button
           onClick={() => setShowCreate(!showCreate)}
           className={`p-2.5 rounded-xl transition-all active:scale-90 ${
-            showCreate ? 'bg-red-500/10 text-red-400' : 'bg-orange-500/10 text-orange-400'
+            showCreate ? 'bg-duo-red/10 text-duo-red' : 'bg-duo-orange/10 text-duo-orange'
           }`}
         >
           {showCreate ? <X size={20} /> : <Plus size={20} />}
@@ -71,20 +71,20 @@ export default function ChallengesPage() {
       {/* Stats bar */}
       {challenges && challenges.length > 0 && (
         <div className="flex gap-2 mb-5 mt-4">
-          <div className="flex-1 bg-slate-800/60 rounded-xl px-3 py-2.5 border border-slate-700/40 flex items-center gap-2">
-            <Swords size={14} className="text-slate-500" />
-            <span className="text-sm font-bold text-slate-200">{challenges.length}</span>
-            <span className="text-[11px] text-slate-500">active</span>
+          <div className="flex-1 bg-surface-card rounded-xl px-3 py-2.5 border border-brd flex items-center gap-2">
+            <Swords size={14} className="text-txt-muted" />
+            <span className="text-sm font-black text-txt-primary">{challenges.length}</span>
+            <span className="text-[11px] text-txt-muted">active</span>
           </div>
-          <div className="flex-1 bg-slate-800/60 rounded-xl px-3 py-2.5 border border-slate-700/40 flex items-center gap-2">
-            <Flame size={14} className="text-orange-400" />
-            <span className="text-sm font-bold text-orange-400">{activeCount}</span>
-            <span className="text-[11px] text-slate-500">on fire</span>
+          <div className="flex-1 bg-surface-card rounded-xl px-3 py-2.5 border border-brd flex items-center gap-2">
+            <Flame size={14} className="text-duo-orange" />
+            <span className="text-sm font-black text-duo-orange">{activeCount}</span>
+            <span className="text-[11px] text-txt-muted">on fire</span>
           </div>
-          <div className="flex-1 bg-slate-800/60 rounded-xl px-3 py-2.5 border border-slate-700/40 flex items-center gap-2">
-            <Zap size={14} className="text-amber-400" />
-            <span className="text-sm font-bold text-amber-400">{totalStreak}</span>
-            <span className="text-[11px] text-slate-500">total</span>
+          <div className="flex-1 bg-surface-card rounded-xl px-3 py-2.5 border border-brd flex items-center gap-2">
+            <Zap size={14} className="text-duo-yellow" />
+            <span className="text-sm font-black text-duo-yellow">{totalStreak}</span>
+            <span className="text-[11px] text-txt-muted">total</span>
           </div>
         </div>
       )}
@@ -101,27 +101,27 @@ export default function ChallengesPage() {
 
       {isLoading && (
         <div className="flex justify-center py-16">
-          <div className="w-10 h-10 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
+          <div className="w-10 h-10 border-3 border-duo-orange border-t-transparent rounded-full animate-spin" />
         </div>
       )}
 
       {!isLoading && !challenges?.length && !showCreate && (
-        <div className="text-center py-20">
+        <div className="text-center py-20 animate-bounce-in">
           <div className="relative inline-block mb-6">
-            <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-orange-500/15 to-red-500/10 border border-orange-500/15 flex items-center justify-center mx-auto">
-              <Swords size={40} className="text-orange-400/60" />
+            <div className="w-24 h-24 rounded-xl bg-duo-orange/10 border border-duo-orange/15 flex items-center justify-center mx-auto">
+              <Swords size={40} className="text-duo-orange/60" />
             </div>
-            <div className="absolute -top-1 -right-1 w-8 h-8 rounded-full bg-gradient-to-br from-amber-500/20 to-orange-500/10 border border-amber-500/20 flex items-center justify-center">
-              <Plus size={14} className="text-amber-400" />
+            <div className="absolute -top-1 -right-1 w-8 h-8 rounded-full bg-duo-yellow/15 border border-duo-yellow/20 flex items-center justify-center">
+              <Plus size={14} className="text-duo-yellow" />
             </div>
           </div>
-          <div className="text-lg font-bold text-slate-200 mb-1.5">No Challenges Yet</div>
-          <div className="text-sm text-slate-500 mb-6 max-w-[240px] mx-auto">
+          <div className="text-lg font-black text-txt-primary mb-1.5">No Challenges Yet</div>
+          <div className="text-sm text-txt-secondary mb-6 max-w-[240px] mx-auto">
             Group habits together and build unstoppable streaks
           </div>
           <button
             onClick={() => setShowCreate(true)}
-            className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 text-white font-semibold text-sm active:scale-95 transition-transform"
+            className="px-5 py-2.5 rounded-xl bg-duo-orange text-white font-bold text-sm active:scale-95 transition-transform"
           >
             Create First Challenge
           </button>
@@ -168,39 +168,38 @@ function ChallengeCard({
   const isCompleted = !!challenge.completed_at;
 
   return (
-    <div className="overflow-hidden rounded-2xl">
+    <div className="overflow-hidden rounded-xl">
       <button onClick={onToggle} className="w-full text-left">
         <div className={`relative p-4 transition-all border ${
           isCompleted
-            ? 'bg-gradient-to-r from-amber-500/15 via-yellow-500/10 to-amber-500/5 border-amber-500/25'
+            ? 'bg-surface-card border-duo-yellow/25'
             : allDone
-              ? 'bg-gradient-to-r from-emerald-500/15 via-teal-500/10 to-emerald-500/5 border-emerald-500/25'
-              : `bg-gradient-to-r ${tier.bg} ${tier.border}`
-        } ${expanded ? 'rounded-t-2xl' : 'rounded-2xl'}`}>
+              ? 'bg-surface-card border-duo-green/25'
+              : `bg-surface-card ${tier.border}`
+        } ${expanded ? 'rounded-t-xl' : 'rounded-xl'}`}>
           {/* Background glow for active streaks */}
           {challenge.current_streak >= 7 && (
-            <div className="absolute inset-0 overflow-hidden rounded-2xl pointer-events-none">
-              <div className="absolute -top-4 -right-4 w-32 h-32 bg-gradient-to-bl from-orange-500/[0.07] to-transparent rounded-full blur-xl" />
+            <div className="absolute inset-0 overflow-hidden rounded-xl pointer-events-none">
+              <div className="absolute -top-4 -right-4 w-32 h-32 bg-gradient-to-bl from-duo-orange/[0.07] to-transparent rounded-full blur-xl" />
             </div>
           )}
 
           <div className="relative flex items-center gap-3.5">
             {/* Shield with streak */}
             <div className={`relative flex-shrink-0 ${isOnFire ? 'animate-shield-glow' : ''}`}>
-              <div className={`w-[60px] h-[60px] rounded-2xl flex items-center justify-center ${
+              <div className={`w-[60px] h-[60px] rounded-xl flex items-center justify-center ${
                 isCompleted
-                  ? 'bg-amber-500/20 border border-amber-500/30'
+                  ? 'bg-duo-yellow/15 border border-duo-yellow/30'
                   : allDone
-                    ? 'bg-emerald-500/20 border border-emerald-500/30'
+                    ? 'bg-duo-green/15 border border-duo-green/30'
                     : challenge.current_streak > 0
-                      ? 'bg-gradient-to-br from-orange-500/25 to-amber-500/15 border border-orange-500/25'
-                      : 'bg-slate-700/40 border border-slate-600/30'
+                      ? 'bg-duo-orange/15 border border-duo-orange/25'
+                      : 'bg-surface-input border border-brd'
               }`}>
                 <svg width="52" height="52" viewBox="0 0 52 52" className="absolute -rotate-90">
-                  <circle cx="26" cy="26" r="22" fill="none" stroke="currentColor" strokeWidth="3"
-                    className="text-slate-700/30" />
+                  <circle cx="26" cy="26" r="22" fill="none" stroke="var(--border-color)" strokeWidth="3" />
                   <circle cx="26" cy="26" r="22" fill="none"
-                    stroke={isCompleted ? '#f59e0b' : allDone ? '#10b981' : challenge.current_streak > 0 ? '#f97316' : '#475569'}
+                    stroke={isCompleted ? '#FFC800' : allDone ? '#58CC02' : challenge.current_streak > 0 ? '#FF9600' : 'var(--border-color)'}
                     strokeWidth="3" strokeLinecap="round"
                     strokeDasharray={`${2 * Math.PI * 22}`}
                     strokeDashoffset={`${2 * Math.PI * 22 * (1 - todayProgress)}`}
@@ -208,26 +207,26 @@ function ChallengeCard({
                   />
                 </svg>
                 <span className={`text-lg font-black relative z-10 ${
-                  isCompleted ? 'text-amber-400'
-                    : allDone ? 'text-emerald-400'
-                      : challenge.current_streak > 0 ? 'text-orange-400' : 'text-slate-400'
+                  isCompleted ? 'text-duo-yellow'
+                    : allDone ? 'text-duo-green'
+                      : challenge.current_streak > 0 ? 'text-duo-orange' : 'text-txt-muted'
                 }`}>
                   {challenge.current_streak}
                 </span>
               </div>
               {isOnFire && !isCompleted && (
                 <div className="absolute -top-1.5 -right-1.5 animate-fire-dance">
-                  <Flame size={16} className="text-orange-400 fill-orange-400/40" />
+                  <Flame size={16} className="text-duo-orange fill-duo-orange/40" />
                 </div>
               )}
               {isCompleted && (
                 <div className="absolute -top-1.5 -right-1.5">
-                  <Crown size={16} className="text-amber-400 fill-amber-400/20" />
+                  <Crown size={16} className="text-duo-yellow fill-duo-yellow/20" />
                 </div>
               )}
               {allDone && !isCompleted && (
                 <div className="absolute -bottom-1 -right-1">
-                  <CheckCircle2 size={16} className="text-emerald-400 fill-emerald-500/20" />
+                  <CheckCircle2 size={16} className="text-duo-green fill-duo-green/20" />
                 </div>
               )}
             </div>
@@ -235,9 +234,9 @@ function ChallengeCard({
             {/* Info */}
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
-                <div className="text-[15px] font-bold text-slate-100 truncate">{challenge.name}</div>
+                <div className="text-[15px] font-bold text-txt-primary truncate">{challenge.name}</div>
                 {isCompleted && (
-                  <span className="px-1.5 py-0.5 rounded-md bg-amber-500/15 text-amber-400 text-[9px] font-bold uppercase flex-shrink-0">
+                  <span className="px-1.5 py-0.5 rounded-full bg-duo-yellow/15 text-duo-yellow text-[9px] font-black uppercase flex-shrink-0">
                     Complete
                   </span>
                 )}
@@ -246,56 +245,55 @@ function ChallengeCard({
               {/* Tier badge + target */}
               <div className="flex items-center gap-1.5 mt-1">
                 {challenge.current_streak > 0 && (
-                  <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-                    isCompleted ? 'bg-amber-500/15 text-amber-400'
-                      : allDone ? 'bg-emerald-500/15 text-emerald-400'
-                        : `bg-slate-700/50 ${tier.color}`
+                  <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${
+                    isCompleted ? 'bg-duo-yellow/15 text-duo-yellow'
+                      : allDone ? 'bg-duo-green/15 text-duo-green'
+                        : `bg-surface-input ${tier.color}`
                   }`}>
                     <TierIcon size={10} />
                     {isCompleted ? 'Champion' : allDone ? 'Completed' : tier.label}
                   </div>
                 )}
-                <span className="text-[11px] text-slate-500">
+                <span className="text-[11px] text-txt-muted">
                   Day {challenge.current_streak}/{challenge.target_days}
                 </span>
               </div>
 
               {/* Target progress bar */}
               <div className="mt-2 flex items-center gap-2">
-                <div className="flex-1 h-1.5 bg-slate-700/50 rounded-full overflow-hidden relative">
-                  {/* Milestone markers */}
+                <div className="flex-1 h-1.5 bg-surface-input rounded-full overflow-hidden relative">
                   {challenge.milestones?.map(m => (
                     <div
                       key={m.days}
-                      className={`absolute top-0 h-full w-px ${m.reached ? 'bg-amber-400/60' : 'bg-slate-500/30'}`}
+                      className={`absolute top-0 h-full w-px ${m.reached ? 'bg-duo-yellow/60' : 'bg-txt-muted/30'}`}
                       style={{ left: `${(m.days / challenge.target_days) * 100}%` }}
                     />
                   ))}
                   <div
                     className={`h-full rounded-full transition-all duration-700 relative ${
                       isCompleted
-                        ? 'bg-gradient-to-r from-amber-500 to-yellow-400'
+                        ? 'bg-gradient-to-r from-duo-yellow to-duo-orange'
                         : allDone
-                          ? 'bg-gradient-to-r from-emerald-500 to-teal-400'
-                          : 'bg-gradient-to-r from-orange-500 to-amber-400'
+                          ? 'bg-duo-green'
+                          : 'bg-gradient-to-r from-duo-orange to-duo-yellow'
                     }`}
                     style={{ width: `${Math.min(targetProgress * 100, 100)}%` }}
                   />
                 </div>
-                <span className="text-[11px] text-slate-500 font-medium tabular-nums w-8 text-right">
+                <span className="text-[11px] text-txt-muted font-bold tabular-nums w-8 text-right">
                   {Math.round(targetProgress * 100)}%
                 </span>
               </div>
             </div>
 
             <div className="flex flex-col items-center gap-1">
-              <div className="flex items-center gap-0.5 text-[11px] text-slate-600">
+              <div className="flex items-center gap-0.5 text-[11px] text-txt-muted">
                 <Trophy size={10} />
                 <span>{challenge.longest_streak}</span>
               </div>
               <ChevronDown
                 size={16}
-                className={`text-slate-500 transition-transform duration-300 ${expanded ? 'rotate-180' : ''}`}
+                className={`text-txt-muted transition-transform duration-300 ${expanded ? 'rotate-180' : ''}`}
               />
             </div>
           </div>
@@ -341,22 +339,22 @@ function ExpandedChallenge({
   const isCompleted = !!challenge.completed_at;
 
   return (
-    <div className="bg-slate-800/60 border border-t-0 border-slate-700/40 rounded-b-2xl p-4 space-y-4 animate-fade-in-up">
+    <div className="bg-surface-card border border-t-0 border-brd rounded-b-xl p-4 space-y-4 animate-fade-in-up">
       {/* Completion banner */}
       {isCompleted && (
-        <div className="bg-gradient-to-r from-amber-500/15 via-yellow-500/10 to-amber-500/15 border border-amber-500/20 rounded-xl p-4 text-center">
+        <div className="bg-duo-yellow/10 border border-duo-yellow/20 rounded-xl p-4 text-center">
           <div className="flex items-center justify-center gap-2 mb-1">
-            <Sparkles size={18} className="text-amber-400" />
-            <span className="text-base font-bold text-amber-300">Challenge Complete!</span>
-            <Sparkles size={18} className="text-amber-400" />
+            <Sparkles size={18} className="text-duo-yellow" />
+            <span className="text-base font-black text-duo-yellow">Challenge Complete!</span>
+            <Sparkles size={18} className="text-duo-yellow" />
           </div>
-          <div className="text-xs text-amber-400/60 mb-3">
+          <div className="text-xs text-duo-yellow/60 mb-3">
             Completed on {new Date(challenge.completed_at!).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
           </div>
           <div className="flex items-center justify-center gap-2">
             <button
               onClick={() => setShowCelebration(true)}
-              className="px-4 py-2 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-bold active:scale-95 transition-transform flex items-center gap-2"
+              className="px-4 py-2 rounded-xl bg-duo-orange text-white text-sm font-bold active:scale-95 transition-transform flex items-center gap-2"
             >
               <Share2 size={14} />
               Share Achievement
@@ -364,7 +362,7 @@ function ExpandedChallenge({
             <button
               onClick={() => extendMutation.mutate(30)}
               disabled={extendMutation.isPending}
-              className="px-4 py-2 rounded-lg bg-slate-700/60 border border-amber-500/20 text-amber-400 text-sm font-bold active:scale-95 transition-transform disabled:opacity-50 flex items-center gap-2"
+              className="px-4 py-2 rounded-xl bg-surface-input border border-duo-yellow/20 text-duo-yellow text-sm font-bold active:scale-95 transition-transform disabled:opacity-50 flex items-center gap-2"
             >
               <ArrowRight size={14} />
               +30 Days
@@ -377,10 +375,10 @@ function ExpandedChallenge({
       {today?.habits && (
         <div>
           <div className="flex items-center gap-2 mb-2.5">
-            <Target size={13} className="text-slate-500" />
-            <span className="text-xs text-slate-500 font-semibold uppercase tracking-wider">Today's Mission</span>
+            <Target size={13} className="text-txt-muted" />
+            <span className="text-xs text-txt-muted font-bold uppercase tracking-wider">Today's Mission</span>
             {today.all_completed_today && (
-              <span className="ml-auto text-[10px] text-emerald-400 font-bold uppercase">All Clear</span>
+              <span className="ml-auto text-[10px] text-duo-green font-black uppercase">All Clear</span>
             )}
           </div>
           <div className="space-y-0.5">
@@ -390,22 +388,22 @@ function ExpandedChallenge({
                 <div
                   key={h.habit_id}
                   className={`flex items-center gap-3 py-2 px-3 rounded-xl transition-all ${
-                    h.completed ? 'bg-emerald-500/[0.06]' : 'bg-transparent'
+                    h.completed ? 'bg-duo-green/[0.06]' : 'bg-transparent'
                   }`}
                 >
                   {h.completed ? (
-                    <CheckCircle2 size={18} className="text-emerald-400 flex-shrink-0" />
+                    <CheckCircle2 size={18} className="text-duo-green flex-shrink-0" />
                   ) : (
-                    <Circle size={18} className="text-slate-600 flex-shrink-0" />
+                    <Circle size={18} className="text-txt-muted flex-shrink-0" />
                   )}
                   <span className="text-sm">{cat.icon}</span>
                   <span className={`text-sm flex-1 ${
-                    h.completed ? 'text-slate-400 line-through decoration-slate-600' : 'text-slate-200'
+                    h.completed ? 'text-txt-muted line-through' : 'text-txt-primary'
                   }`}>
                     {h.name}
                   </span>
                   {h.completed && (
-                    <Star size={12} className="text-amber-400/50 flex-shrink-0" />
+                    <Star size={12} className="text-duo-yellow/50 flex-shrink-0" />
                   )}
                 </div>
               );
@@ -427,61 +425,60 @@ function ExpandedChallenge({
 
       {/* Streak stats */}
       <div className="grid grid-cols-3 gap-2">
-        <div className="bg-gradient-to-br from-orange-500/15 to-red-500/5 border border-orange-500/15 rounded-xl p-3 text-center">
-          <Flame size={16} className={`mx-auto mb-1 text-orange-400 ${challenge.current_streak >= 7 ? 'animate-fire-dance' : ''}`} />
-          <div className="text-xl font-black text-orange-400">{challenge.current_streak}</div>
-          <div className="text-[10px] text-orange-400/50 font-semibold uppercase">Current</div>
+        <div className="bg-duo-orange/10 border border-duo-orange/15 rounded-xl p-3 text-center">
+          <Flame size={16} className={`mx-auto mb-1 text-duo-orange ${challenge.current_streak >= 7 ? 'animate-fire-dance' : ''}`} />
+          <div className="text-xl font-black text-duo-orange">{challenge.current_streak}</div>
+          <div className="text-[10px] text-duo-orange/50 font-bold uppercase">Current</div>
         </div>
-        <div className="bg-gradient-to-br from-amber-500/15 to-yellow-500/5 border border-amber-500/15 rounded-xl p-3 text-center">
-          <Trophy size={16} className="text-amber-400 mx-auto mb-1" />
-          <div className="text-xl font-black text-amber-400">{challenge.longest_streak}</div>
-          <div className="text-[10px] text-amber-400/50 font-semibold uppercase">Best</div>
+        <div className="bg-duo-yellow/10 border border-duo-yellow/15 rounded-xl p-3 text-center">
+          <Trophy size={16} className="text-duo-yellow mx-auto mb-1" />
+          <div className="text-xl font-black text-duo-yellow">{challenge.longest_streak}</div>
+          <div className="text-[10px] text-duo-yellow/50 font-bold uppercase">Best</div>
         </div>
         <div className={`bg-gradient-to-br ${tier.bg} border ${tier.border} rounded-xl p-3 text-center`}>
           <Shield size={16} className={`${tier.color} mx-auto mb-1`} />
           <div className={`text-[13px] font-black ${tier.color}`}>{tier.label}</div>
-          <div className="text-[10px] text-slate-500 font-semibold uppercase">Rank</div>
+          <div className="text-[10px] text-txt-muted font-bold uppercase">Rank</div>
         </div>
       </div>
 
       {/* Date info */}
       <div className="flex gap-2 text-[11px]">
         {challenge.started_at && (
-          <div className="flex-1 bg-slate-700/30 rounded-lg px-3 py-2 border border-slate-700/30">
-            <div className="text-slate-600 uppercase font-semibold text-[9px] mb-0.5">Started</div>
-            <div className="text-slate-400 font-medium">
+          <div className="flex-1 bg-surface-input rounded-xl px-3 py-2 border border-brd">
+            <div className="text-txt-muted uppercase font-bold text-[9px] mb-0.5">Started</div>
+            <div className="text-txt-secondary font-medium">
               {new Date(challenge.started_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
             </div>
           </div>
         )}
-        <div className="flex-1 bg-slate-700/30 rounded-lg px-3 py-2 border border-slate-700/30">
-          <div className="text-slate-600 uppercase font-semibold text-[9px] mb-0.5">Target</div>
-          <div className="text-slate-400 font-medium">{challenge.target_days} days</div>
+        <div className="flex-1 bg-surface-input rounded-xl px-3 py-2 border border-brd">
+          <div className="text-txt-muted uppercase font-bold text-[9px] mb-0.5">Target</div>
+          <div className="text-txt-secondary font-medium">{challenge.target_days} days</div>
         </div>
-        <div className="flex-1 bg-slate-700/30 rounded-lg px-3 py-2 border border-slate-700/30">
-          <div className="text-slate-600 uppercase font-semibold text-[9px] mb-0.5">Remaining</div>
-          <div className={`font-medium ${isCompleted ? 'text-amber-400' : 'text-slate-400'}`}>
+        <div className="flex-1 bg-surface-input rounded-xl px-3 py-2 border border-brd">
+          <div className="text-txt-muted uppercase font-bold text-[9px] mb-0.5">Remaining</div>
+          <div className={`font-medium ${isCompleted ? 'text-duo-yellow' : 'text-txt-secondary'}`}>
             {isCompleted ? 'Done!' : `${Math.max(challenge.target_days - challenge.current_streak, 0)}d`}
           </div>
         </div>
       </div>
 
-      {/* Battle Log - horizontal scrollable streak visualization */}
+      {/* Battle Log */}
       <BattleLog completedDates={completedDates} endStr={endStr} />
 
       <button
         onClick={onDelete}
-        className="flex items-center gap-2 text-red-400/60 hover:text-red-400 text-xs px-3 py-2 rounded-lg hover:bg-red-500/10 transition-all w-full justify-center border border-transparent hover:border-red-500/10"
+        className="flex items-center gap-2 text-duo-red/60 hover:text-duo-red text-xs px-3 py-2 rounded-xl hover:bg-duo-red/10 transition-all w-full justify-center border border-transparent hover:border-duo-red/10 active:scale-95"
       >
         <Trash2 size={13} />
         Delete Challenge
       </button>
 
-      {/* Also add share for non-completed but all-done-today */}
       {!isCompleted && today?.all_completed_today && (
         <button
           onClick={() => setShowCelebration(true)}
-          className="flex items-center gap-2 text-emerald-400 text-xs px-3 py-2 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/15 transition-all w-full justify-center border border-emerald-500/15 font-semibold"
+          className="flex items-center gap-2 text-duo-green text-xs px-3 py-2 rounded-xl bg-duo-green/10 hover:bg-duo-green/15 transition-all w-full justify-center border border-duo-green/15 font-bold active:scale-95"
         >
           <Share2 size={13} />
           Share Today's Progress
@@ -521,32 +518,28 @@ function MilestoneTimeline({
   return (
     <div>
       <div className="flex items-center gap-2 mb-3">
-        <Flag size={13} className="text-slate-500" />
-        <span className="text-xs text-slate-500 font-semibold uppercase tracking-wider">Journey</span>
+        <Flag size={13} className="text-txt-muted" />
+        <span className="text-xs text-txt-muted font-bold uppercase tracking-wider">Journey</span>
       </div>
 
       <div className="relative">
-        {/* The track */}
         <div className="relative h-14 mx-2">
-          {/* Background track */}
-          <div className="absolute top-6 left-0 right-0 h-1 bg-slate-700/50 rounded-full" />
-          {/* Filled track */}
+          <div className="absolute top-6 left-0 right-0 h-1 bg-surface-input rounded-full" />
           <div
             className={`absolute top-6 left-0 h-1 rounded-full transition-all duration-700 ${
               completedAt
-                ? 'bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500'
-                : 'bg-gradient-to-r from-orange-500 to-amber-400'
+                ? 'bg-gradient-to-r from-duo-yellow via-duo-orange to-duo-yellow'
+                : 'bg-gradient-to-r from-duo-orange to-duo-yellow'
             }`}
             style={{ width: `${Math.min(progress * 100, 100)}%` }}
           />
 
           {/* Start marker */}
           <div className="absolute left-0 top-3.5 flex flex-col items-center" style={{ transform: 'translateX(-4px)' }}>
-            <div className="w-3 h-3 rounded-full bg-slate-600 border-2 border-slate-500 z-10" />
-            <span className="text-[9px] text-slate-600 mt-1.5 font-medium">0</span>
+            <div className="w-3 h-3 rounded-full bg-surface-input border-2 border-brd z-10" />
+            <span className="text-[9px] text-txt-muted mt-1.5 font-medium">0</span>
           </div>
 
-          {/* Milestone markers */}
           {milestones.map((m) => {
             const pos = (m.days / targetDays) * 100;
             if (pos > 100) return null;
@@ -558,13 +551,13 @@ function MilestoneTimeline({
               >
                 <div className={`relative z-10 transition-all ${m.reached ? 'scale-110' : ''}`}>
                   {m.reached ? (
-                    <div className="w-3.5 h-3.5 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 border-2 border-amber-300/50 shadow-[0_0_8px_rgba(251,191,36,0.4)]" />
+                    <div className="w-3.5 h-3.5 rounded-full bg-gradient-to-br from-duo-yellow to-duo-orange border-2 border-duo-yellow/50 shadow-[0_0_8px_rgba(255,200,0,0.4)]" />
                   ) : (
-                    <div className="w-3 h-3 rounded-full bg-slate-700 border-2 border-slate-600" />
+                    <div className="w-3 h-3 rounded-full bg-surface-input border-2 border-brd" />
                   )}
                 </div>
                 <span className={`text-[9px] mt-1.5 font-bold ${
-                  m.reached ? 'text-amber-400' : 'text-slate-600'
+                  m.reached ? 'text-duo-yellow' : 'text-txt-muted'
                 }`}>
                   {m.days}d
                 </span>
@@ -572,26 +565,24 @@ function MilestoneTimeline({
             );
           })}
 
-          {/* Target/finish marker */}
           <div className="absolute right-0 top-2.5 flex flex-col items-center" style={{ transform: 'translateX(4px)' }}>
             {completedAt ? (
-              <Crown size={16} className="text-amber-400 z-10" />
+              <Crown size={16} className="text-duo-yellow z-10" />
             ) : (
-              <Flag size={14} className="text-slate-500 z-10" />
+              <Flag size={14} className="text-txt-muted z-10" />
             )}
-            <span className={`text-[9px] mt-1 font-bold ${completedAt ? 'text-amber-400' : 'text-slate-500'}`}>
+            <span className={`text-[9px] mt-1 font-bold ${completedAt ? 'text-duo-yellow' : 'text-txt-muted'}`}>
               {targetDays}d
             </span>
           </div>
 
-          {/* Current position indicator */}
           {currentStreak > 0 && !completedAt && (
             <div
               className="absolute top-1 flex flex-col items-center z-20"
               style={{ left: `${Math.min(progress * 100, 100)}%`, transform: 'translateX(-50%)' }}
             >
               <div className="animate-pulse-ring">
-                <div className="w-5 h-5 rounded-full bg-gradient-to-br from-orange-400 to-red-500 border-2 border-orange-300/50 flex items-center justify-center shadow-[0_0_12px_rgba(249,115,22,0.5)]">
+                <div className="w-5 h-5 rounded-full bg-gradient-to-br from-duo-orange to-duo-red border-2 border-duo-orange/50 flex items-center justify-center shadow-[0_0_12px_rgba(255,150,0,0.5)]">
                   <Flame size={10} className="text-white" />
                 </div>
               </div>
@@ -604,7 +595,6 @@ function MilestoneTimeline({
 }
 
 function BattleLog({ completedDates, endStr }: { completedDates: Set<string>; endStr: string }) {
-  // Build last 35 days
   const days: { date: string; label: string; dayNum: number; isToday: boolean }[] = [];
   for (let i = 34; i >= 0; i--) {
     const d = new Date();
@@ -619,13 +609,11 @@ function BattleLog({ completedDates, endStr }: { completedDates: Set<string>; en
     });
   }
 
-  // Group into weeks (chunks of 7)
   const weeks: typeof days[] = [];
   for (let i = 0; i < days.length; i += 7) {
     weeks.push(days.slice(i, i + 7));
   }
 
-  // Count streaks for intensity
   let consecutiveDone = 0;
   const streakAt = new Map<string, number>();
   for (const day of days) {
@@ -640,39 +628,37 @@ function BattleLog({ completedDates, endStr }: { completedDates: Set<string>; en
   return (
     <div>
       <div className="flex items-center gap-2 mb-3">
-        <Swords size={13} className="text-slate-500" />
-        <span className="text-xs text-slate-500 font-semibold uppercase tracking-wider">Battle Log</span>
-        <span className="ml-auto text-[10px] text-slate-600">Last 5 weeks</span>
+        <Swords size={13} className="text-txt-muted" />
+        <span className="text-xs text-txt-muted font-bold uppercase tracking-wider">Battle Log</span>
+        <span className="ml-auto text-[10px] text-txt-muted">Last 5 weeks</span>
       </div>
 
-      {/* Horizontal scrollable weeks */}
       <div className="space-y-1.5">
         {weeks.map((week, wi) => (
           <div key={wi} className="flex gap-1.5">
             {week.map(day => {
               const done = completedDates.has(day.date);
               const streak = streakAt.get(day.date) ?? 0;
-              // Intensity based on streak length at that point
               const intensity = done
-                ? streak >= 7 ? 'bg-emerald-400/50 ring-1 ring-emerald-400/30 shadow-[0_0_6px_rgba(52,211,153,0.3)]'
-                  : streak >= 3 ? 'bg-emerald-500/35 ring-1 ring-emerald-500/20'
-                    : 'bg-emerald-500/20'
-                : day.isToday ? 'bg-orange-500/15 ring-1 ring-orange-500/30'
-                  : 'bg-slate-800/30';
+                ? streak >= 7 ? 'bg-duo-green/40 ring-1 ring-duo-green/30 shadow-[0_0_6px_rgba(88,204,2,0.3)]'
+                  : streak >= 3 ? 'bg-duo-green/25 ring-1 ring-duo-green/20'
+                    : 'bg-duo-green/15'
+                : day.isToday ? 'bg-duo-orange/15 ring-1 ring-duo-orange/30'
+                  : 'bg-surface-input';
 
               return (
                 <div key={day.date} className="flex-1 flex flex-col items-center gap-0.5">
                   {wi === 0 && (
-                    <span className="text-[8px] text-slate-600 font-medium">{day.label}</span>
+                    <span className="text-[8px] text-txt-muted font-medium">{day.label}</span>
                   )}
                   <div
                     className={`w-full aspect-square rounded-lg flex items-center justify-center transition-all ${intensity}`}
                   >
-                    <span className={`text-[10px] font-semibold ${
+                    <span className={`text-[10px] font-bold ${
                       done
-                        ? streak >= 7 ? 'text-emerald-300' : 'text-emerald-400'
-                        : day.isToday ? 'text-orange-400'
-                          : 'text-slate-600'
+                        ? streak >= 7 ? 'text-duo-green' : 'text-duo-green'
+                        : day.isToday ? 'text-duo-orange'
+                          : 'text-txt-muted'
                     }`}>
                       {day.dayNum}
                     </span>
@@ -684,23 +670,22 @@ function BattleLog({ completedDates, endStr }: { completedDates: Set<string>; en
         ))}
       </div>
 
-      {/* Legend */}
       <div className="flex items-center gap-3 mt-2.5 justify-end">
         <div className="flex items-center gap-1">
-          <div className="w-2.5 h-2.5 rounded-sm bg-slate-800/30" />
-          <span className="text-[9px] text-slate-600">Miss</span>
+          <div className="w-2.5 h-2.5 rounded-sm bg-surface-input" />
+          <span className="text-[9px] text-txt-muted">Miss</span>
         </div>
         <div className="flex items-center gap-1">
-          <div className="w-2.5 h-2.5 rounded-sm bg-emerald-500/20" />
-          <span className="text-[9px] text-slate-600">Done</span>
+          <div className="w-2.5 h-2.5 rounded-sm bg-duo-green/15" />
+          <span className="text-[9px] text-txt-muted">Done</span>
         </div>
         <div className="flex items-center gap-1">
-          <div className="w-2.5 h-2.5 rounded-sm bg-emerald-500/35 ring-1 ring-emerald-500/20" />
-          <span className="text-[9px] text-slate-600">3+ streak</span>
+          <div className="w-2.5 h-2.5 rounded-sm bg-duo-green/25 ring-1 ring-duo-green/20" />
+          <span className="text-[9px] text-txt-muted">3+ streak</span>
         </div>
         <div className="flex items-center gap-1">
-          <div className="w-2.5 h-2.5 rounded-sm bg-emerald-400/50 shadow-[0_0_4px_rgba(52,211,153,0.3)]" />
-          <span className="text-[9px] text-slate-600">7+ fire</span>
+          <div className="w-2.5 h-2.5 rounded-sm bg-duo-green/40 shadow-[0_0_4px_rgba(88,204,2,0.3)]" />
+          <span className="text-[9px] text-txt-muted">7+ fire</span>
         </div>
       </div>
     </div>
@@ -735,10 +720,10 @@ function CreateChallengeForm({ onClose, onCreated }: { onClose: () => void; onCr
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-slate-800/80 backdrop-blur rounded-2xl p-5 mb-5 border border-orange-500/15 space-y-4 animate-fade-in-up">
+    <form onSubmit={handleSubmit} className="bg-surface-card rounded-xl p-5 mb-5 border border-duo-orange/15 space-y-4 animate-fade-in-up">
       <div className="flex items-center gap-2 mb-1">
-        <Swords size={16} className="text-orange-400" />
-        <span className="text-sm font-bold text-slate-200">New Challenge</span>
+        <Swords size={16} className="text-duo-orange" />
+        <span className="text-sm font-bold text-txt-primary">New Challenge</span>
       </div>
 
       <input
@@ -747,14 +732,14 @@ function CreateChallengeForm({ onClose, onCreated }: { onClose: () => void; onCr
         onChange={e => setName(e.target.value)}
         placeholder="Challenge name (e.g., 30 Day Fitness)"
         autoFocus
-        className="w-full bg-slate-700/50 border border-slate-600/50 rounded-xl px-4 py-3 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-orange-500/40 focus:ring-1 focus:ring-orange-500/20 text-[15px]"
+        className="w-full bg-surface-input border border-brd rounded-xl px-4 py-3 text-txt-primary placeholder-txt-muted focus:outline-none focus:border-duo-orange/40 focus:ring-2 focus:ring-duo-orange/20 text-[15px] transition-all"
       />
 
       {/* Target days selector */}
       <div>
         <div className="flex items-center gap-2 mb-2">
-          <Flag size={12} className="text-slate-500" />
-          <span className="text-xs text-slate-500 font-semibold uppercase tracking-wider">Target Duration</span>
+          <Flag size={12} className="text-txt-muted" />
+          <span className="text-xs text-txt-muted font-bold uppercase tracking-wider">Target Duration</span>
         </div>
         <div className="flex gap-1.5 flex-wrap">
           {TARGET_PRESETS.map(d => (
@@ -762,10 +747,10 @@ function CreateChallengeForm({ onClose, onCreated }: { onClose: () => void; onCr
               key={d}
               type="button"
               onClick={() => setTargetDays(d)}
-              className={`px-3 py-2 rounded-xl text-sm font-bold transition-all ${
+              className={`px-3 py-2 rounded-full text-sm font-bold transition-all active:scale-95 ${
                 targetDays === d
-                  ? 'bg-orange-500/20 text-orange-400 border border-orange-500/30'
-                  : 'bg-slate-700/40 text-slate-400 border border-transparent hover:bg-slate-700/60'
+                  ? 'bg-duo-orange/15 text-duo-orange border border-duo-orange/30'
+                  : 'bg-surface-input text-txt-muted border border-transparent'
               }`}
             >
               {d}d
@@ -782,10 +767,10 @@ function CreateChallengeForm({ onClose, onCreated }: { onClose: () => void; onCr
                 if (v > 0 && v <= 365) setTargetDays(v);
               }}
               placeholder="Custom"
-              className={`w-20 px-3 py-2 rounded-xl text-sm font-bold text-center transition-all bg-slate-700/40 border placeholder-slate-600 focus:outline-none ${
+              className={`w-20 px-3 py-2 rounded-full text-sm font-bold text-center transition-all bg-surface-input border placeholder-txt-muted focus:outline-none ${
                 !TARGET_PRESETS.includes(targetDays)
-                  ? 'text-orange-400 border-orange-500/30 bg-orange-500/10'
-                  : 'text-slate-400 border-transparent'
+                  ? 'text-duo-orange border-duo-orange/30 bg-duo-orange/10'
+                  : 'text-txt-muted border-transparent'
               }`}
             />
           </div>
@@ -793,10 +778,10 @@ function CreateChallengeForm({ onClose, onCreated }: { onClose: () => void; onCr
       </div>
 
       <div>
-        <div className="text-xs text-slate-500 font-semibold mb-2 uppercase tracking-wider">
+        <div className="text-xs text-txt-muted font-bold mb-2 uppercase tracking-wider">
           Select Habits
           {selectedHabits.length > 0 && (
-            <span className="ml-2 px-1.5 py-0.5 rounded-md bg-orange-500/15 text-orange-400 normal-case tracking-normal">
+            <span className="ml-2 px-1.5 py-0.5 rounded-full bg-duo-orange/15 text-duo-orange normal-case tracking-normal">
               {selectedHabits.length}
             </span>
           )}
@@ -810,14 +795,14 @@ function CreateChallengeForm({ onClose, onCreated }: { onClose: () => void; onCr
                 key={h.id}
                 type="button"
                 onClick={() => toggleHabit(h.id)}
-                className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all text-left ${
+                className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all text-left active:scale-[0.98] ${
                   selected
-                    ? 'bg-orange-500/10 border border-orange-500/25'
-                    : 'bg-slate-700/30 border border-transparent hover:bg-slate-700/50'
+                    ? 'bg-duo-orange/10 border border-duo-orange/25'
+                    : 'bg-surface-input border border-transparent'
                 }`}
               >
-                <div className={`w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 transition-colors ${
-                  selected ? 'bg-orange-500 text-white' : 'border border-slate-600'
+                <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 transition-colors ${
+                  selected ? 'bg-duo-orange text-white' : 'border-2 border-brd'
                 }`}>
                   {selected && (
                     <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
@@ -826,13 +811,13 @@ function CreateChallengeForm({ onClose, onCreated }: { onClose: () => void; onCr
                   )}
                 </div>
                 <span className="text-sm">{cat.icon}</span>
-                <span className="text-sm text-slate-200 flex-1">{h.name}</span>
-                <span className={`text-[10px] ${cat.text} opacity-50`}>{cat.label}</span>
+                <span className="text-sm text-txt-primary flex-1">{h.name}</span>
+                <span className={`text-[10px] ${cat.text}`}>{cat.label}</span>
               </button>
             );
           })}
           {!habits?.length && (
-            <div className="text-sm text-slate-500 text-center py-4">Create some habits first</div>
+            <div className="text-sm text-txt-muted text-center py-4">Create some habits first</div>
           )}
         </div>
       </div>
@@ -840,7 +825,7 @@ function CreateChallengeForm({ onClose, onCreated }: { onClose: () => void; onCr
       <button
         type="submit"
         disabled={mutation.isPending || !name.trim() || selectedHabits.length === 0}
-        className="w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white py-3 rounded-xl font-bold text-[15px] transition-all active:scale-[0.98] disabled:opacity-40 flex items-center justify-center gap-2"
+        className="w-full bg-duo-orange text-white py-3 rounded-xl font-bold text-[15px] transition-all active:scale-[0.98] disabled:opacity-40 flex items-center justify-center gap-2"
       >
         <Swords size={16} />
         Start {targetDays}-Day Challenge

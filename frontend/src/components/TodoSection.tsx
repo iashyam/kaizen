@@ -82,11 +82,11 @@ export default function TodoSection() {
   return (
     <div>
       <div className="flex items-center gap-2 mb-3">
-        <span className="text-sm">📋</span>
-        <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Tasks</span>
-        <div className="flex-1 h-px bg-slate-800" />
+        <span className="text-sm">{'\u{1F4CB}'}</span>
+        <span className="text-xs font-bold uppercase tracking-wider text-txt-secondary">Tasks</span>
+        <div className="flex-1 h-px bg-brd" />
         {todos && todos.length > 0 && (
-          <span className="text-xs text-slate-600">
+          <span className="text-xs text-txt-muted font-bold">
             {completed.length}/{todos.length}
           </span>
         )}
@@ -100,13 +100,13 @@ export default function TodoSection() {
             value={newTodo}
             onChange={e => setNewTodo(e.target.value)}
             placeholder="Add a task..."
-            className="w-full bg-slate-800/60 border border-slate-700/40 rounded-xl px-4 py-2.5 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/30"
+            className="w-full bg-surface-input border border-brd rounded-xl px-4 py-2.5 text-sm text-txt-primary placeholder-txt-muted focus:outline-none focus:border-duo-green/50 focus:ring-2 focus:ring-duo-green/20 transition-all"
           />
         </div>
         <button
           type="submit"
           disabled={!newTodo.trim()}
-          className="bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-400 p-2.5 rounded-xl transition-all active:scale-90 disabled:opacity-30"
+          className="bg-duo-green/15 hover:bg-duo-green/25 text-duo-green p-2.5 rounded-full transition-all active:scale-90 disabled:opacity-30"
         >
           <Plus size={18} />
         </button>
@@ -127,7 +127,7 @@ export default function TodoSection() {
       {/* Completed todos */}
       {completed.length > 0 && (
         <div className="mt-3">
-          <div className="text-[11px] text-slate-600 font-medium mb-1.5">
+          <div className="text-[11px] text-txt-muted font-bold mb-1.5">
             Completed ({completed.length})
           </div>
           <div className="space-y-1">
@@ -144,7 +144,7 @@ export default function TodoSection() {
       )}
 
       {!todos?.length && (
-        <div className="text-center py-4 text-sm text-slate-600">No tasks for today</div>
+        <div className="text-center py-4 text-sm text-txt-muted">No tasks for today</div>
       )}
     </div>
   );

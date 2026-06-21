@@ -10,9 +10,9 @@ import { Plus, X, Trash2, ChevronRight, Repeat, Calendar } from 'lucide-react';
 const CATEGORIES = ['morning', 'evening', 'weekend', 'custom'] as const;
 const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const REPEAT_OPTIONS = [
-  { value: 'daily', label: 'Every Day', icon: '📅' },
-  { value: 'specific_days', label: 'Specific Days', icon: '📆' },
-  { value: 'weekly', label: 'Weekly', icon: '🔄' },
+  { value: 'daily', label: 'Every Day', icon: '\u{1F4C5}' },
+  { value: 'specific_days', label: 'Specific Days', icon: '\u{1F4C6}' },
+  { value: 'weekly', label: 'Weekly', icon: '\u{1F504}' },
 ] as const;
 
 function repeatLabel(habit: Habit): string {
@@ -84,15 +84,15 @@ export default function HabitsPage() {
     <div className="px-4 pt-6 max-w-lg mx-auto">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-slate-100">Habits</h1>
-          <div className="text-sm text-slate-500 mt-0.5">{(habits ?? []).length} active habits</div>
+          <h1 className="text-2xl font-black text-txt-primary">Habits</h1>
+          <div className="text-sm text-txt-secondary mt-0.5">{(habits ?? []).length} active habits</div>
         </div>
         <button
           onClick={() => setShowAdd(!showAdd)}
           className={`p-2.5 rounded-xl transition-all active:scale-90 ${
             showAdd
-              ? 'bg-red-500/10 text-red-400'
-              : 'bg-indigo-500/10 text-indigo-400'
+              ? 'bg-duo-red/10 text-duo-red'
+              : 'bg-duo-green/10 text-duo-green'
           }`}
         >
           {showAdd ? <X size={20} /> : <Plus size={20} />}
@@ -101,19 +101,19 @@ export default function HabitsPage() {
 
       {/* Add form */}
       {showAdd && (
-        <form onSubmit={handleAdd} className="bg-slate-800/80 backdrop-blur rounded-2xl p-5 mb-5 border border-slate-700/50 space-y-4 animate-fade-in-up">
+        <form onSubmit={handleAdd} className="bg-surface-card rounded-xl p-5 mb-5 border border-brd space-y-4 animate-fade-in-up">
           <input
             type="text"
             value={newName}
             onChange={e => setNewName(e.target.value)}
             placeholder="What habit do you want to build?"
             autoFocus
-            className="w-full bg-slate-700/50 border border-slate-600/50 rounded-xl px-4 py-3 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/30 text-[15px]"
+            className="w-full bg-surface-input border border-brd rounded-xl px-4 py-3 text-txt-primary placeholder-txt-muted focus:outline-none focus:border-duo-green/50 focus:ring-2 focus:ring-duo-green/20 text-[15px] transition-all"
           />
 
           {/* Category */}
           <div>
-            <div className="text-xs text-slate-500 font-medium mb-2">Category</div>
+            <div className="text-xs text-txt-secondary font-bold mb-2">Category</div>
             <div className="flex gap-2">
               {CATEGORIES.map(cat => {
                 const config = CATEGORY_CONFIG[cat];
@@ -122,10 +122,10 @@ export default function HabitsPage() {
                     key={cat}
                     type="button"
                     onClick={() => setNewCategory(cat)}
-                    className={`flex-1 flex flex-col items-center gap-1 py-2.5 rounded-xl text-xs font-medium transition-all duration-200 ${
+                    className={`flex-1 flex flex-col items-center gap-1 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 ${
                       newCategory === cat
                         ? `${config.bg} ${config.text} border ${config.border}`
-                        : 'bg-slate-700/30 text-slate-500 border border-transparent'
+                        : 'bg-surface-input text-txt-muted border border-transparent'
                     }`}
                   >
                     <span className="text-base">{config.emoji}</span>
@@ -138,17 +138,17 @@ export default function HabitsPage() {
 
           {/* Repeat */}
           <div>
-            <div className="text-xs text-slate-500 font-medium mb-2">Repeat</div>
+            <div className="text-xs text-txt-secondary font-bold mb-2">Repeat</div>
             <div className="flex gap-2">
               {REPEAT_OPTIONS.map(opt => (
                 <button
                   key={opt.value}
                   type="button"
                   onClick={() => setNewRepeatType(opt.value)}
-                  className={`flex-1 flex flex-col items-center gap-1 py-2.5 rounded-xl text-xs font-medium transition-all duration-200 ${
+                  className={`flex-1 flex flex-col items-center gap-1 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 ${
                     newRepeatType === opt.value
-                      ? 'bg-indigo-500/15 text-indigo-400 border border-indigo-500/30'
-                      : 'bg-slate-700/30 text-slate-500 border border-transparent'
+                      ? 'bg-duo-blue/15 text-duo-blue border border-duo-blue/30'
+                      : 'bg-surface-input text-txt-muted border border-transparent'
                   }`}
                 >
                   <span className="text-base">{opt.icon}</span>
@@ -161,17 +161,17 @@ export default function HabitsPage() {
           {/* Day picker for specific_days */}
           {newRepeatType === 'specific_days' && (
             <div className="animate-fade-in-up">
-              <div className="text-xs text-slate-500 font-medium mb-2">Select Days</div>
+              <div className="text-xs text-txt-secondary font-bold mb-2">Select Days</div>
               <div className="flex gap-1.5">
                 {DAY_LABELS.map((label, idx) => (
                   <button
                     key={idx}
                     type="button"
                     onClick={() => toggleDay(idx)}
-                    className={`flex-1 py-2.5 rounded-xl text-xs font-semibold transition-all duration-200 ${
+                    className={`flex-1 py-2.5 rounded-full text-xs font-bold transition-all duration-200 ${
                       newRepeatDays.includes(idx)
-                        ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/20'
-                        : 'bg-slate-700/40 text-slate-500 hover:bg-slate-700/60'
+                        ? 'bg-duo-blue text-white'
+                        : 'bg-surface-input text-txt-muted'
                     }`}
                   >
                     {label.charAt(0)}
@@ -184,7 +184,7 @@ export default function HabitsPage() {
           <button
             type="submit"
             disabled={addMutation.isPending || !newName.trim() || (newRepeatType === 'specific_days' && newRepeatDays.length === 0)}
-            className="w-full bg-gradient-to-r from-indigo-500 to-violet-500 hover:from-indigo-600 hover:to-violet-600 text-white py-3 rounded-xl font-semibold text-[15px] transition-all active:scale-[0.98] disabled:opacity-40"
+            className="w-full bg-duo-green text-white py-3 rounded-xl font-bold text-[15px] transition-all active:scale-[0.98] disabled:opacity-40"
           >
             Create Habit
           </button>
@@ -193,15 +193,15 @@ export default function HabitsPage() {
 
       {isLoading && (
         <div className="flex flex-col items-center justify-center py-16 gap-3">
-          <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+          <div className="w-8 h-8 border-3 border-duo-green border-t-transparent rounded-full animate-spin" />
         </div>
       )}
 
       {!isLoading && (habits ?? []).length === 0 && (
-        <div className="text-center py-16">
-          <div className="text-5xl mb-4">🌱</div>
-          <div className="text-lg font-semibold text-slate-300 mb-1">No Habits Yet</div>
-          <div className="text-sm text-slate-500">Tap + to create your first habit</div>
+        <div className="text-center py-16 animate-bounce-in">
+          <div className="text-6xl mb-4">{'\u{1F331}'}</div>
+          <div className="text-lg font-black text-txt-primary mb-1">No Habits Yet</div>
+          <div className="text-sm text-txt-secondary">Tap + to create your first habit</div>
         </div>
       )}
 
@@ -213,33 +213,33 @@ export default function HabitsPage() {
           <div key={cat} className="mb-6">
             <div className="flex items-center gap-2 mb-3">
               <span className="text-sm">{config.emoji}</span>
-              <span className={`text-xs font-semibold uppercase tracking-wider ${config.text}`}>
+              <span className={`text-xs font-black uppercase tracking-wider ${config.text}`}>
                 {config.label}
               </span>
-              <div className="flex-1 h-px bg-slate-800" />
-              <span className="text-xs text-slate-600">{items.length}</span>
+              <div className="flex-1 h-px bg-brd" />
+              <span className="text-xs text-txt-muted font-bold">{items.length}</span>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-2.5">
               {items.map(habit => (
                 <div key={habit.id}>
                   <button
                     onClick={() => setExpandedId(expandedId === habit.id ? null : habit.id)}
                     className="w-full text-left"
                   >
-                    <div className={`flex items-center gap-3 p-4 rounded-2xl transition-all ${
+                    <div className={`flex items-center gap-3 p-4 transition-all ${
                       expandedId === habit.id
-                        ? `bg-gradient-to-r ${config.gradient} border ${config.border}`
-                        : 'bg-slate-800/80 border border-slate-700/50 hover:border-slate-600/50'
+                        ? `bg-surface-card border border-b-0 ${config.border} rounded-t-xl`
+                        : 'bg-surface-card border border-brd rounded-xl'
                     }`}>
                       <div className={`w-10 h-10 rounded-xl ${config.bg} flex items-center justify-center text-lg`}>
                         {config.icon}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="text-[15px] font-semibold text-slate-100 truncate">{habit.name}</div>
+                        <div className="text-[15px] font-semibold text-txt-primary truncate">{habit.name}</div>
                         <div className="flex items-center gap-2 mt-0.5">
-                          <span className={`text-xs ${config.text} opacity-60`}>{config.label}</span>
-                          <span className="text-slate-700">·</span>
-                          <span className="text-xs text-slate-500 flex items-center gap-1">
+                          <span className={`text-xs ${config.text} font-medium`}>{config.label}</span>
+                          <span className="text-brd">{'\u{00B7}'}</span>
+                          <span className="text-xs text-txt-muted flex items-center gap-1">
                             <Repeat size={10} />
                             {repeatLabel(habit)}
                           </span>
@@ -247,7 +247,7 @@ export default function HabitsPage() {
                       </div>
                       <ChevronRight
                         size={16}
-                        className={`text-slate-500 transition-transform ${expandedId === habit.id ? 'rotate-90' : ''}`}
+                        className={`text-txt-muted transition-transform ${expandedId === habit.id ? 'rotate-90' : ''}`}
                       />
                     </div>
                   </button>
@@ -282,20 +282,20 @@ function ExpandedHabitManagement({ habit, onDelete }: { habit: Habit; onDelete: 
   });
 
   return (
-    <div className={`bg-slate-800/50 rounded-b-2xl p-4 border border-t-0 ${cat.border} space-y-4 -mt-1 animate-fade-in-up`}>
+    <div className={`bg-surface-card rounded-b-xl p-4 border border-t-0 ${cat.border} space-y-4 animate-fade-in-up`}>
       {/* Repeat info */}
-      <div className="flex items-center gap-2 text-xs text-slate-400 bg-slate-700/30 rounded-lg px-3 py-2">
+      <div className="flex items-center gap-2 text-xs text-txt-secondary bg-surface-input rounded-xl px-3 py-2">
         <Repeat size={12} />
         <span>{repeatLabel(habit)}</span>
         {habit.repeat_type === 'specific_days' && habit.repeat_days?.length > 0 && (
           <div className="flex gap-1 ml-auto">
-            {DAY_LABELS.map((label, idx) => (
+            {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((label, idx) => (
               <span
                 key={idx}
-                className={`w-5 h-5 rounded-md text-[10px] flex items-center justify-center font-semibold ${
+                className={`w-5 h-5 rounded-full text-[10px] flex items-center justify-center font-bold ${
                   habit.repeat_days.includes(idx)
-                    ? 'bg-indigo-500/30 text-indigo-400'
-                    : 'text-slate-600'
+                    ? 'bg-duo-blue/20 text-duo-blue'
+                    : 'text-txt-muted'
                 }`}
               >
                 {label.charAt(0)}
@@ -309,7 +309,7 @@ function ExpandedHabitManagement({ habit, onDelete }: { habit: Habit; onDelete: 
       <HabitCalendar habitId={habit.id} category={habit.category} />
       <button
         onClick={onDelete}
-        className="flex items-center gap-2 text-red-400/70 hover:text-red-400 text-sm px-3 py-2 rounded-lg hover:bg-red-500/10 transition-all"
+        className="flex items-center gap-2 text-duo-red/70 hover:text-duo-red text-sm px-3 py-2 rounded-xl hover:bg-duo-red/10 transition-all active:scale-95"
       >
         <Trash2 size={14} />
         Delete Habit

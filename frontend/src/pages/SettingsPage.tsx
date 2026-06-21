@@ -5,11 +5,13 @@ import {
   getVapidPublicKey, subscribePush, testNotification,
   withdrawSavings,
 } from '../api';
-import { Bell, BellRing, Send, Wallet, MessageCircle, Smartphone, PiggyBank, LogOut } from 'lucide-react';
+import { Bell, BellRing, Send, Wallet, MessageCircle, Smartphone, PiggyBank, LogOut, Sun, Moon } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 
 export default function SettingsPage() {
   const { user, logout } = useAuth();
+  const { isDark, toggleTheme } = useTheme();
   const queryClient = useQueryClient();
   const { data: settings } = useQuery({ queryKey: ['settings'], queryFn: getSettings });
 
@@ -83,27 +85,49 @@ export default function SettingsPage() {
 
   return (
     <div className="px-4 pt-6 max-w-lg mx-auto space-y-4">
-      <h1 className="text-2xl font-bold text-slate-100 mb-4">Settings</h1>
+      <h1 className="text-2xl font-black text-txt-primary mb-4">Settings</h1>
+
+      {/* Appearance */}
+      <Section icon={isDark ? <Moon size={18} /> : <Sun size={18} />} title="Appearance" color="text-duo-purple">
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="text-sm font-semibold text-txt-primary">{isDark ? 'Dark Mode' : 'Light Mode'}</div>
+            <div className="text-xs text-txt-muted mt-0.5">Toggle between light and dark themes</div>
+          </div>
+          <button
+            onClick={toggleTheme}
+            className={`relative w-14 h-8 rounded-full transition-colors duration-300 ${
+              isDark ? 'bg-duo-purple/30' : 'bg-duo-green/30'
+            }`}
+          >
+            <div className={`absolute top-1 w-6 h-6 rounded-full transition-all duration-300 flex items-center justify-center shadow-md ${
+              isDark ? 'left-7 bg-duo-purple' : 'left-1 bg-duo-green'
+            }`}>
+              {isDark ? <Moon size={12} className="text-white" /> : <Sun size={12} className="text-white" />}
+            </div>
+          </button>
+        </div>
+      </Section>
 
       {/* Budget */}
-      <Section icon={<Wallet size={18} />} title="Budget" color="text-indigo-400">
-        <label className="text-xs text-slate-500 font-medium">Daily Allowance (INR)</label>
+      <Section icon={<Wallet size={18} />} title="Budget" color="text-duo-blue">
+        <label className="text-xs text-txt-muted font-bold">Daily Allowance (INR)</label>
         <div className="flex gap-2 mt-1.5">
           <div className="relative flex-1">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">&#8377;</span>
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-txt-muted">&#8377;</span>
             <input
               type="number"
               value={allowance}
               onChange={e => setAllowance(e.target.value)}
-              className="w-full bg-slate-700/50 border border-slate-600/50 rounded-xl pl-8 pr-4 py-2.5 text-slate-100 focus:outline-none focus:border-indigo-500/50"
+              className="w-full bg-surface-input border border-brd rounded-xl pl-8 pr-4 py-2.5 text-txt-primary focus:outline-none focus:border-duo-green/50 focus:ring-2 focus:ring-duo-green/20 transition-all"
             />
           </div>
           <button
             onClick={handleSaveSettings}
-            className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-all active:scale-95 ${
+            className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-all active:scale-95 ${
               saved
-                ? 'bg-emerald-500/20 text-emerald-400'
-                : 'bg-indigo-500 hover:bg-indigo-600 text-white'
+                ? 'bg-duo-green/15 text-duo-green'
+                : 'bg-duo-green text-white'
             }`}
           >
             {saved ? 'Saved!' : 'Save'}
@@ -112,8 +136,8 @@ export default function SettingsPage() {
       </Section>
 
       {/* Withdraw Savings */}
-      <Section icon={<PiggyBank size={18} />} title="Withdraw Savings" color="text-emerald-400">
-        <p className="text-xs text-slate-500 leading-relaxed">
+      <Section icon={<PiggyBank size={18} />} title="Withdraw Savings" color="text-duo-green">
+        <p className="text-xs text-txt-muted leading-relaxed">
           Reset your budget period to today. Use this after you transfer your accumulated savings.
         </p>
         <button
@@ -123,7 +147,7 @@ export default function SettingsPage() {
             }
           }}
           disabled={withdrawMutation.isPending}
-          className="w-full flex items-center justify-center gap-2 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 text-emerald-400 px-4 py-3 rounded-xl text-sm font-semibold transition-all active:scale-[0.98]"
+          className="w-full flex items-center justify-center gap-2 bg-duo-green/10 hover:bg-duo-green/15 border border-duo-green/20 text-duo-green px-4 py-3 rounded-xl text-sm font-bold transition-all active:scale-[0.98]"
         >
           <PiggyBank size={16} />
           {withdrawMutation.isPending ? 'Resetting...' : withdrawMutation.isSuccess ? 'Done!' : 'Withdraw & Reset'}
@@ -131,14 +155,14 @@ export default function SettingsPage() {
       </Section>
 
       {/* Push Notifications */}
-      <Section icon={<Smartphone size={18} />} title="Push Notifications" color="text-violet-400">
+      <Section icon={<Smartphone size={18} />} title="Push Notifications" color="text-duo-purple">
         <button
           onClick={handleEnablePush}
           disabled={pushEnabled}
-          className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
+          className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all ${
             pushEnabled
-              ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-              : 'bg-slate-700/50 text-slate-300 border border-slate-600/50 hover:bg-slate-700 active:scale-[0.98]'
+              ? 'bg-duo-green/10 text-duo-green border border-duo-green/20'
+              : 'bg-surface-input text-txt-primary border border-brd active:scale-[0.98]'
           }`}
         >
           {pushEnabled ? <BellRing size={18} /> : <Bell size={18} />}
@@ -147,40 +171,40 @@ export default function SettingsPage() {
       </Section>
 
       {/* Telegram */}
-      <Section icon={<MessageCircle size={18} />} title="Telegram" color="text-blue-400">
-        <label className="text-xs text-slate-500 font-medium">Chat ID</label>
+      <Section icon={<MessageCircle size={18} />} title="Telegram" color="text-duo-blue">
+        <label className="text-xs text-txt-muted font-bold">Chat ID</label>
         <input
           type="text"
           value={chatId}
           onChange={e => setChatId(e.target.value)}
           onBlur={handleSaveSettings}
           placeholder="Send /start to your bot to get this"
-          className="w-full bg-slate-700/50 border border-slate-600/50 rounded-xl px-4 py-2.5 text-slate-100 placeholder-slate-600 mt-1.5 focus:outline-none focus:border-indigo-500/50"
+          className="w-full bg-surface-input border border-brd rounded-xl px-4 py-2.5 text-txt-primary placeholder-txt-muted mt-1.5 focus:outline-none focus:border-duo-green/50 focus:ring-2 focus:ring-duo-green/20 transition-all"
         />
 
         <button
           onClick={() => testMutation.mutate()}
           disabled={testMutation.isPending}
-          className="mt-3 flex items-center gap-2 bg-slate-700/50 hover:bg-slate-700 border border-slate-600/50 text-slate-300 px-4 py-2.5 rounded-xl text-sm font-medium transition-all active:scale-[0.98]"
+          className="mt-3 flex items-center gap-2 bg-surface-input border border-brd text-txt-primary px-4 py-2.5 rounded-xl text-sm font-bold transition-all active:scale-[0.98]"
         >
           <Send size={14} />
           {testMutation.isPending ? 'Sending...' : 'Send Test'}
         </button>
         {testMutation.data && (
-          <pre className="text-xs text-slate-500 bg-slate-900/50 rounded-lg p-3 overflow-auto mt-2 border border-slate-800">
+          <pre className="text-xs text-txt-muted bg-surface-input rounded-xl p-3 overflow-auto mt-2 border border-brd">
             {JSON.stringify(testMutation.data, null, 2)}
           </pre>
         )}
       </Section>
 
       {/* Account */}
-      <Section icon={<LogOut size={18} />} title="Account" color="text-red-400">
+      <Section icon={<LogOut size={18} />} title="Account" color="text-duo-red">
         {user && (
-          <p className="text-xs text-slate-500">Signed in as <span className="text-slate-400">{user.email}</span></p>
+          <p className="text-xs text-txt-muted">Signed in as <span className="text-txt-secondary">{user.email}</span></p>
         )}
         <button
           onClick={logout}
-          className="w-full flex items-center justify-center gap-2 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 px-4 py-3 rounded-xl text-sm font-semibold transition-all active:scale-[0.98]"
+          className="w-full flex items-center justify-center gap-2 bg-duo-red/10 hover:bg-duo-red/15 border border-duo-red/20 text-duo-red px-4 py-3 rounded-xl text-sm font-bold transition-all active:scale-[0.98]"
         >
           <LogOut size={16} />
           Sign Out
@@ -198,10 +222,10 @@ function Section({ icon, title, color, children }: {
   children: React.ReactNode;
 }) {
   return (
-    <section className="bg-slate-800/60 backdrop-blur rounded-2xl p-5 border border-slate-700/30 space-y-3">
+    <section className="bg-surface-card rounded-xl p-5 border border-brd space-y-3">
       <div className={`flex items-center gap-2 ${color}`}>
         {icon}
-        <span className="text-sm font-semibold">{title}</span>
+        <span className="text-sm font-bold">{title}</span>
       </div>
       {children}
     </section>

@@ -52,6 +52,13 @@ function getDateDisplay(offset: number): string {
   return d.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'short' });
 }
 
+function getGreeting(): string {
+  const hour = new Date().getHours();
+  if (hour < 12) return 'Rise and shine!';
+  if (hour < 17) return 'Keep it up!';
+  return 'Finish strong!';
+}
+
 export default function TodayPage() {
   const queryClient = useQueryClient();
   const [newTodo, setNewTodo] = useState('');
@@ -230,7 +237,6 @@ export default function TodayPage() {
       id: item.id,
       order: i,
     }));
-    // Also include completed items with their orders
     completed.forEach((item, i) => {
       updates.push({ type: item.kind, id: item.id, order: reordered.length + i });
     });
@@ -245,6 +251,8 @@ export default function TodayPage() {
 
   const isLoading = (isToday && habitsLoading) || todosLoading;
 
+  const progressMessage = progress >= 1 ? "You're a champion!" : progress > 0.5 ? "You're on fire!" : '';
+
   return (
     <div ref={pageRef} className="px-4 pt-6 max-w-lg mx-auto">
       {/* Header */}
@@ -253,22 +261,28 @@ export default function TodayPage() {
           <button
             onClick={goPrev}
             disabled={isToday}
-            className="text-slate-400 disabled:opacity-20 p-1 transition-opacity"
+            className="text-txt-muted disabled:opacity-20 p-1 transition-opacity active:scale-90"
           >
             <ChevronLeft size={20} />
           </button>
           <div className="text-center min-w-[130px]">
-            <div className="text-sm text-slate-500 font-medium">
+            <div className="text-sm text-txt-secondary font-medium">
               {getDateDisplay(dayOffset)}
             </div>
-            <h1 className="text-2xl font-bold text-slate-100 mt-1">
+            <h1 className="text-2xl font-black text-txt-primary mt-1">
               {isToday ? 'Today' : 'Tomorrow'}
             </h1>
+            {isToday && (
+              <div className="text-xs text-duo-green font-semibold mt-0.5">
+                {getGreeting()}
+                {progressMessage && ` ${progressMessage}`}
+              </div>
+            )}
           </div>
           <button
             onClick={goNext}
             disabled={dayOffset === 1}
-            className="text-slate-400 disabled:opacity-20 p-1 transition-opacity"
+            className="text-txt-muted disabled:opacity-20 p-1 transition-opacity active:scale-90"
           >
             <ChevronRight size={20} />
           </button>
@@ -276,10 +290,10 @@ export default function TodayPage() {
 
         <div className="relative w-14 h-14">
           <svg width="56" height="56" viewBox="0 0 56 56" className="-rotate-90">
-            <circle cx="28" cy="28" r="24" fill="none" stroke="#1e293b" strokeWidth="4" />
+            <circle cx="28" cy="28" r="24" fill="none" stroke="var(--border-color)" strokeWidth="4" />
             <circle
               cx="28" cy="28" r="24" fill="none"
-              stroke={progress === 1 ? '#10b981' : '#6366f1'}
+              stroke={progress === 1 ? '#58CC02' : '#1CB0F6'}
               strokeWidth="4"
               strokeLinecap="round"
               strokeDasharray={`${2 * Math.PI * 24}`}
@@ -288,23 +302,23 @@ export default function TodayPage() {
             />
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="text-xs font-bold text-slate-100">{totalCompleted}</span>
-            <span className="text-[8px] text-slate-500">/{totalItems}</span>
+            <span className="text-xs font-black text-txt-primary">{totalCompleted}</span>
+            <span className="text-[8px] text-txt-muted">/{totalItems}</span>
           </div>
         </div>
       </div>
 
       {/* All done */}
       {totalItems > 0 && progress === 1 && (
-        <div className="bg-gradient-to-r from-emerald-500/20 to-teal-500/10 border border-emerald-500/20 rounded-2xl p-4 mb-5 text-center animate-fade-in-up">
+        <div className="bg-duo-green/15 border border-duo-green/25 rounded-xl p-4 mb-5 text-center animate-bounce-in">
           <div className="text-2xl mb-1">{'\u{1F389}'}</div>
-          <div className="text-sm font-semibold text-emerald-400 mb-2">
+          <div className="text-sm font-bold text-duo-green mb-2">
             {isToday ? 'All done for today!' : 'All set for tomorrow!'}
           </div>
           {isToday && (
             <button
               onClick={() => setShowCelebration(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 text-xs font-semibold transition-all active:scale-95"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-duo-green text-white text-xs font-bold transition-all active:scale-95"
             >
               <Share2 size={12} />
               Share Progress
@@ -328,12 +342,12 @@ export default function TodayPage() {
           value={newTodo}
           onChange={e => setNewTodo(e.target.value)}
           placeholder={isToday ? 'Add a task...' : 'Plan for tomorrow...'}
-          className="flex-1 bg-slate-800/60 border border-slate-700/40 rounded-xl px-4 py-2.5 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/30"
+          className="flex-1 bg-surface-input border border-brd rounded-xl px-4 py-2.5 text-sm text-txt-primary placeholder-txt-muted focus:outline-none focus:border-duo-green/50 focus:ring-2 focus:ring-duo-green/20 transition-all"
         />
         <button
           type="submit"
           disabled={!newTodo.trim()}
-          className="bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-400 p-2.5 rounded-xl transition-all active:scale-90 disabled:opacity-30"
+          className="bg-duo-green hover:bg-duo-green-dark text-white p-2.5 rounded-full transition-all active:scale-90 disabled:opacity-30"
         >
           <Plus size={18} />
         </button>
@@ -341,7 +355,7 @@ export default function TodayPage() {
 
       {isLoading && (
         <div className="flex flex-col items-center justify-center py-16 gap-3">
-          <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+          <div className="w-8 h-8 border-3 border-duo-green border-t-transparent rounded-full animate-spin" />
         </div>
       )}
 
@@ -350,7 +364,7 @@ export default function TodayPage() {
           {/* Sortable incomplete items */}
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
             <SortableContext items={incomplete.map(uniqueId)} strategy={verticalListSortingStrategy}>
-              <div className="space-y-2 mb-4">
+              <div className="space-y-2.5 mb-4">
                 {incomplete.map(item => (
                   <SortableCard
                     key={uniqueId(item)}
@@ -368,11 +382,11 @@ export default function TodayPage() {
           {completed.length > 0 && (
             <>
               <div className="flex items-center gap-2 mb-2 mt-6">
-                <div className="h-px flex-1 bg-slate-800" />
-                <span className="text-[11px] text-slate-600 font-medium">Completed ({completed.length})</span>
-                <div className="h-px flex-1 bg-slate-800" />
+                <div className="h-px flex-1 bg-brd" />
+                <span className="text-[11px] text-txt-muted font-bold">Completed ({completed.length})</span>
+                <div className="h-px flex-1 bg-brd" />
               </div>
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 {completed.map(item => (
                   <UnifiedCard
                     key={uniqueId(item)}
@@ -386,12 +400,12 @@ export default function TodayPage() {
           )}
 
           {totalItems === 0 && (
-            <div className="text-center py-12">
-              <div className="text-5xl mb-4">{isToday ? '🌱' : '📝'}</div>
-              <div className="text-lg font-semibold text-slate-300 mb-1">
+            <div className="text-center py-12 animate-bounce-in">
+              <div className="text-6xl mb-4">{isToday ? '\u{1F331}' : '\u{1F4DD}'}</div>
+              <div className="text-lg font-black text-txt-primary mb-1">
                 {isToday ? 'Your Day is Clear' : 'Nothing Planned Yet'}
               </div>
-              <div className="text-sm text-slate-500">
+              <div className="text-sm text-txt-secondary">
                 {isToday ? 'Add tasks above or create habits in the Habits tab' : 'Add tasks above to plan your tomorrow'}
               </div>
             </div>
@@ -459,7 +473,7 @@ function UnifiedCard({
   const handleToggle = (e: React.MouseEvent) => {
     e.stopPropagation();
     setAnimating(true);
-    setTimeout(() => setAnimating(false), 300);
+    setTimeout(() => setAnimating(false), 500);
     onToggle();
   };
 
@@ -467,16 +481,16 @@ function UnifiedCard({
 
   return (
     <div
-      className={`flex items-center gap-2.5 p-3.5 rounded-2xl transition-all duration-300 ${
-        isDragging ? 'shadow-2xl shadow-indigo-500/20 scale-[1.02]' : ''
+      className={`flex items-center gap-2.5 p-3.5 rounded-xl transition-all duration-300 ${
+        isDragging ? 'shadow-xl scale-[1.02]' : ''
       } ${
         item.completed
           ? isHabit
-            ? `bg-gradient-to-r ${cat!.gradient} border ${cat!.border} opacity-50`
-            : 'bg-slate-800/30 border border-slate-700/20 opacity-50'
+            ? `bg-surface-card border ${cat!.border} opacity-50`
+            : 'bg-surface-card border border-brd opacity-50'
           : isHabit
-            ? `bg-gradient-to-r ${cat!.gradient} border ${cat!.border}`
-            : 'bg-slate-800/60 border border-slate-700/40'
+            ? `bg-surface-card border ${cat!.border}`
+            : 'bg-surface-card border border-brd'
       }`}
     >
       {/* Drag handle */}
@@ -484,7 +498,7 @@ function UnifiedCard({
         <div
           ref={dragHandleRef}
           {...dragListeners}
-          className="touch-none cursor-grab active:cursor-grabbing text-slate-600 hover:text-slate-400 transition-colors p-0.5 -ml-1"
+          className="touch-none cursor-grab active:cursor-grabbing text-txt-muted hover:text-txt-secondary transition-colors p-0.5 -ml-1"
         >
           <GripVertical size={16} />
         </div>
@@ -494,26 +508,28 @@ function UnifiedCard({
       <button
         onClick={handleToggle}
         className={`relative w-11 h-11 rounded-xl flex items-center justify-center transition-all duration-300 flex-shrink-0 ${
-          animating ? 'animate-check-pop' : ''
+          animating ? 'animate-jelly' : ''
         } ${
           item.completed
-            ? isHabit ? `${cat!.bg} shadow-lg` : 'bg-emerald-500/20'
-            : isHabit ? 'bg-slate-700/50 active:scale-90' : 'bg-slate-700/40 active:scale-90'
+            ? isHabit ? `${cat!.bg}` : 'bg-duo-green/15'
+            : isHabit ? `${cat!.bg} active:scale-90` : 'bg-surface-input active:scale-90'
         }`}
       >
         {isHabit ? (
-          <span className={`text-lg ${item.completed ? '' : 'opacity-40'}`}>{cat!.icon}</span>
+          <span className={`text-lg ${item.completed ? '' : 'opacity-70'}`}>{cat!.icon}</span>
         ) : (
           item.completed ? (
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <path d="M2 7L5.5 10.5L12 3.5" stroke="#10b981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+            <div className="animate-bounce-in">
+              <svg width="16" height="16" viewBox="0 0 14 14" fill="none">
+                <path d="M2 7L5.5 10.5L12 3.5" stroke="#58CC02" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
           ) : (
-            <div className="w-5 h-5 rounded-full border-2 border-slate-500" />
+            <div className="w-5 h-5 rounded-full border-2 border-txt-muted" />
           )
         )}
         {item.completed && isHabit && (
-          <div className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-emerald-500 rounded-full flex items-center justify-center">
+          <div className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-duo-green rounded-full flex items-center justify-center animate-bounce-in">
             <svg width="8" height="8" viewBox="0 0 10 10" fill="none">
               <path d="M1.5 5L4 7.5L8.5 2.5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
@@ -523,27 +539,29 @@ function UnifiedCard({
 
       {/* Content */}
       <div className="flex-1 min-w-0">
-        <div className={`text-[14px] font-medium truncate transition-all ${
-          item.completed ? 'text-slate-500 line-through' : 'text-slate-100'
+        <div className={`text-[14px] font-semibold truncate transition-all ${
+          item.completed ? 'text-txt-muted line-through' : 'text-txt-primary'
         }`}>
           {item.name}
         </div>
         <div className="flex items-center gap-2 mt-0.5">
           {isHabit && cat && (
-            <span className={`text-[11px] ${cat.text} opacity-60`}>{cat.label}</span>
+            <span className={`text-[11px] ${cat.text} font-medium`}>{cat.label}</span>
           )}
           {!isHabit && (
-            <span className="text-[11px] text-slate-500">Task</span>
+            <span className="text-[11px] text-txt-muted font-medium">Task</span>
           )}
         </div>
       </div>
 
       {/* Streak or delete */}
       {isHabit && habitData && habitData.current_streak > 0 && (
-        <div className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold ${
-          habitData.current_streak >= 7
-            ? 'bg-orange-500/20 text-orange-400 animate-streak-glow'
-            : 'bg-slate-700/50 text-slate-400'
+        <div className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-black ${
+          habitData.current_streak >= 30
+            ? 'bg-duo-yellow/20 text-duo-yellow animate-streak-glow'
+            : habitData.current_streak >= 7
+              ? 'bg-duo-orange/20 text-duo-orange animate-streak-glow'
+              : 'bg-surface-input text-txt-secondary'
         }`}>
           <Flame size={12} />
           {habitData.current_streak}
@@ -553,7 +571,7 @@ function UnifiedCard({
       {!isHabit && onDelete && (
         <button
           onClick={onDelete}
-          className="text-slate-600 hover:text-red-400 p-1.5 rounded-lg hover:bg-red-500/10 transition-all"
+          className="text-txt-muted hover:text-duo-red p-1.5 rounded-xl hover:bg-duo-red/10 transition-all active:scale-90"
         >
           <Trash2 size={14} />
         </button>

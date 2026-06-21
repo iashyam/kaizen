@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 
-const COLORS = ['#f59e0b', '#10b981', '#6366f1', '#ec4899', '#14b8a6', '#f97316', '#8b5cf6', '#06b6d4'];
+const COLORS = ['#58CC02', '#1CB0F6', '#FF9600', '#FF4B4B', '#CE82FF', '#FFC800', '#46a302', '#1899d6'];
 const PARTICLE_COUNT = 80;
 const DURATION = 3000;
 
