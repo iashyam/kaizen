@@ -13,3 +13,11 @@ services:
       - "8080:80"
     depends_on:
       - backend
+
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    environment:
+      - TUNNEL_TOKEN=${CLOUDFLARE_TOKEN}
+    command: tunnel --no-autoupdate run --token ${CLOUDFLARE_TOKEN}
+
