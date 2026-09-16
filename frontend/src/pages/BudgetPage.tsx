@@ -64,9 +64,8 @@ export default function BudgetPage() {
             <StatCard label="Avg/Day" value={`\u20B9${Math.round(summary.avg_daily_spend).toLocaleString('en-IN')}`} />
             <StatCard label="Logged" value={`${summary.days_logged}/${summary.days_in_month}`} />
             <StatCard
-              label="Saved"
-              value={`\u20B9${Math.abs(summary.total_saved).toLocaleString('en-IN')}`}
-              highlight={summary.total_saved >= 0}
+              label="Total Spent"
+              value={`\u20B9${summary.total_spent.toLocaleString('en-IN')}`}
             />
           </div>
         </div>
