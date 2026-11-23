@@ -1,17 +1,19 @@
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
-from datetime import date
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
-scheduler = AsyncIOScheduler()
+TZ = ZoneInfo("Asia/Kolkata")
+scheduler = AsyncIOScheduler(timezone=TZ)
 
 
 async def send_habit_reminder(time_of_day: str):
     from database import get_db
-    from services.push import send_push_notification
+    from services.push import push_to_user_doc
     from services.telegram import send_telegram
 
     db = get_db()
-    today_str = date.today().isoformat()
+    today_str = datetime.now(TZ).date().isoformat()
 
     # Iterate all users' settings
     async for doc in db.settings.find({}):
@@ -42,11 +44,7 @@ async def send_habit_reminder(time_of_day: str):
 
         msg = f"You have {remaining} {time_of_day} habit{'s' if remaining != 1 else ''} left to complete!"
 
-        if doc.get("push_subscription"):
-            try:
-                await send_push_notification(doc["push_subscription"], f"{time_of_day.title()} Habits", msg)
-            except Exception:
-                pass
+        await push_to_user_doc(db, doc, f"{time_of_day.title()} Habits", msg)
 
         if doc.get("telegram_chat_id"):
             try:
@@ -58,7 +56,7 @@ async def send_habit_reminder(time_of_day: str):
 async def send_budget_reminder():
     from database import get_db
     from services.budget_calc import get_today_budget
-    from services.push import send_push_notification
+    from services.push import push_to_user_doc
     from services.telegram import send_telegram
 
     db = get_db()
@@ -74,11 +72,7 @@ async def send_budget_reminder():
 
         msg = f"Don't forget to log today's spending! Available budget: {budget['available_budget']} INR"
 
-        if doc.get("push_subscription"):
-            try:
-                await send_push_notification(doc["push_subscription"], "Budget Reminder", msg)
-            except Exception:
-                pass
+        await push_to_user_doc(db, doc, "Budget Reminder", msg)
 
         if doc.get("telegram_chat_id"):
             try:

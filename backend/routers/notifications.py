@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 
 from auth import get_current_user
 from database import get_db
@@ -52,6 +52,33 @@ async def push_subscribe(subscription: dict, user: dict = Depends(get_current_us
 @router.get("/vapid-public-key")
 async def vapid_public_key():
     return {"public_key": settings.vapid_public_key}
+
+
+@router.get("/notifications/push/status")
+async def push_status(user: dict = Depends(get_current_user)):
+    db = get_db()
+    doc = await db.settings.find_one({"user_id": user["_id"]})
+    return {
+        "server_configured": bool(settings.vapid_private_key and settings.vapid_public_key),
+        "subscribed": bool(doc and doc.get("push_subscription")),
+    }
+
+
+@router.post("/notifications/test-push")
+async def test_push(user: dict = Depends(get_current_user)):
+    from services.push import send_push_notification
+
+    db = get_db()
+    doc = await db.settings.find_one({"user_id": user["_id"]})
+    if not doc or not doc.get("push_subscription"):
+        raise HTTPException(400, "No push subscription saved. Enable push first.")
+    try:
+        await send_push_notification(
+            doc["push_subscription"], "Kaizen", "Test notification - push is working!"
+        )
+    except Exception as e:
+        raise HTTPException(502, f"{type(e).__name__}: {e}")
+    return {"ok": True}
 
 
 @router.post("/notifications/test")

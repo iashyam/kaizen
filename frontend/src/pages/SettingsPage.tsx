@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   getSettings, updateSettings,
-  getVapidPublicKey, subscribePush, testNotification,
+  getVapidPublicKey, subscribePush, testNotification, getPushStatus, testPush,
   withdrawSavings,
 } from '../api';
 import { Bell, BellRing, Send, Wallet, MessageCircle, Smartphone, PiggyBank, LogOut, Sun, Moon } from 'lucide-react';
@@ -18,6 +18,10 @@ export default function SettingsPage() {
   const [allowance, setAllowance] = useState('500');
   const [chatId, setChatId] = useState('');
   const [pushEnabled, setPushEnabled] = useState(false);
+  const [pushError, setPushError] = useState('');
+  const { data: pushStatus, refetch: refetchPushStatus } = useQuery({ queryKey: ['push-status'], queryFn: getPushStatus });
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || (navigator as unknown as { standalone?: boolean }).standalone === true;
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
@@ -28,10 +32,10 @@ export default function SettingsPage() {
   }, [settings]);
 
   useEffect(() => {
-    if ('Notification' in window) {
-      setPushEnabled(Notification.permission === 'granted');
-    }
-  }, []);
+    setPushEnabled(
+      'Notification' in window && Notification.permission === 'granted' && !!pushStatus?.subscribed,
+    );
+  }, [pushStatus]);
 
   const settingsMutation = useMutation({
     mutationFn: updateSettings,
@@ -59,27 +63,45 @@ export default function SettingsPage() {
     });
   };
 
+  const testPushMutation = useMutation({ mutationFn: testPush });
+
   const handleEnablePush = async () => {
+    setPushError('');
     try {
+      if (isIOS && !isStandalone) {
+        setPushError('On iPhone, add Kaizen to your Home Screen (Share → Add to Home Screen) and open it from there.');
+        return;
+      }
+      if (!('Notification' in window) || !('serviceWorker' in navigator) || !('PushManager' in window)) {
+        setPushError('Push is not supported in this browser.');
+        return;
+      }
       const permission = await Notification.requestPermission();
-      if (permission !== 'granted') return;
+      if (permission !== 'granted') {
+        setPushError('Notification permission denied. Enable it in iOS Settings → Notifications → Kaizen.');
+        return;
+      }
 
       const { public_key } = await getVapidPublicKey();
       if (!public_key) {
-        alert('VAPID keys not configured on server');
+        setPushError('VAPID keys not configured on server.');
         return;
       }
 
       const reg = await navigator.serviceWorker.ready;
+      // Drop any stale subscription (e.g. from old service worker / old key) and resubscribe.
+      const existing = await reg.pushManager.getSubscription();
+      if (existing) await existing.unsubscribe();
       const subscription = await reg.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(public_key),
       });
 
       await subscribePush(subscription.toJSON());
-      setPushEnabled(true);
+      await refetchPushStatus();
     } catch (err) {
       console.error('Push subscription failed:', err);
+      setPushError(err instanceof Error ? err.message : 'Push subscription failed');
     }
   };
 
@@ -168,6 +190,29 @@ export default function SettingsPage() {
           {pushEnabled ? <BellRing size={18} /> : <Bell size={18} />}
           {pushEnabled ? 'Push Notifications Enabled' : 'Enable Push Notifications'}
         </button>
+        {pushEnabled && (
+          <button
+            onClick={() => testPushMutation.mutate()}
+            disabled={testPushMutation.isPending}
+            className="mt-3 w-full flex items-center justify-center gap-2 bg-surface-input border border-brd text-txt-primary px-4 py-2.5 rounded-xl text-sm font-bold transition-all active:scale-[0.98]"
+          >
+            <Send size={14} />
+            {testPushMutation.isPending ? 'Sending...' : 'Send Test Notification'}
+          </button>
+        )}
+        {testPushMutation.isSuccess && (
+          <p className="text-xs text-duo-green mt-2">Sent. If nothing shows up in a few seconds, check iOS Settings → Notifications → Kaizen.</p>
+        )}
+        {testPushMutation.isError && (
+          <p className="text-xs text-duo-red mt-2 break-words">{(testPushMutation.error as Error).message}</p>
+        )}
+        {pushError && <p className="text-xs text-duo-red mt-2">{pushError}</p>}
+        {pushStatus && !pushStatus.server_configured && (
+          <p className="text-xs text-duo-red mt-2">Server has no VAPID keys configured.</p>
+        )}
+        {isIOS && !isStandalone && (
+          <p className="text-xs text-txt-muted mt-2">iPhone: push only works when opened from the Home Screen icon.</p>
+        )}
       </Section>
 
       {/* Telegram */}
@@ -190,7 +235,7 @@ export default function SettingsPage() {
           <Send size={14} />
           {testMutation.isPending ? 'Sending...' : 'Send Test'}
         </button>
-        {testMutation.data && (
+        {!!testMutation.data && (
           <pre className="text-xs text-txt-muted bg-surface-input rounded-xl p-3 overflow-auto mt-2 border border-brd">
             {JSON.stringify(testMutation.data, null, 2)}
           </pre>
@@ -232,7 +277,7 @@ function Section({ icon, title, color, children }: {
   );
 }
 
-function urlBase64ToUint8Array(base64String: string): Uint8Array {
+function urlBase64ToUint8Array(base64String: string): Uint8Array<ArrayBuffer> {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
   const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
   const rawData = window.atob(base64);

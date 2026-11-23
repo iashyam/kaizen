@@ -103,6 +103,8 @@ export const updateSettings = (data: Partial<AppSettings>) =>
 export const subscribePush = (subscription: PushSubscriptionJSON) =>
   request('/notifications/push/subscribe', { method: 'POST', body: JSON.stringify(subscription) });
 export const getVapidPublicKey = () => request<{ public_key: string }>('/vapid-public-key');
+export const getPushStatus = () => request<{ server_configured: boolean; subscribed: boolean }>('/notifications/push/status');
+export const testPush = () => request<{ ok: boolean }>('/notifications/test-push', { method: 'POST' });
 export const testNotification = () => request('/notifications/test', { method: 'POST' });
 
 // Types
